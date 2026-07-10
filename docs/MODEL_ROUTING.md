@@ -39,10 +39,10 @@ Tier-specific behavior:
 
 | Combination | `default` | `high` | `max` |
 |---|---|---|---|
-| claude code + deepseek V4 flash | low effort | medium effort | high effort |
-| claude code + deepseek V4 pro | medium effort | high effort | max effort |
-| claude code + Mimo V2.5 | medium effort | high effort | max effort |
-| claude code + Mimo V2.5 pro | high effort | high effort | max effort |
+| claude code + deepseek V4 flash | max effort | max effort | max effort |
+| claude code + deepseek V4 pro | max effort | max effort | max effort |
+| claude code + Mimo V2.5 | deep thinking + 1M context | deep thinking + 1M context | deep thinking + 1M context |
+| claude code + Mimo V2.5 pro | deep thinking + 1M context | deep thinking + 1M context | deep thinking + 1M context |
 | opencode + GLM 5.2 | omit `--variant` | `--variant high` | `--variant max` |
 | codex review | high review effort | high review effort | max review effort |
 
@@ -54,6 +54,17 @@ Tier-specific behavior:
 - MiMo does not run as a separate worker. MiMo V2.5 and MiMo V2.5 Pro run through Claude Code.
 - Codex acts as World Entry and World Review. It is not a background Worker and never auto-merges.
 - Hermes is not part of World routing.
+
+## Claude Code Provider Configuration
+
+The DeepSeek and MiMo API credentials are private local configuration. Store the WSL-side values in `~/.claude/settings.json` with mode `0600`, and keep World task profiles in the user runtime `~/.ai-orchestrator/profiles/`. Do not commit either location or echo credential values in task artifacts.
+
+DeepSeek V4 Flash/Pro and MiMo V2.5/V2.5 Pro are represented as `capability_tier: max` for every World route. Routing intensity still selects a model and retry order, but cannot lower the execution capability sent to Claude Code.
+
+Provider-specific maximum settings are preserved instead of assuming a shared API knob:
+
+- DeepSeek V4 uses its official Claude Code configuration, including `CLAUDE_CODE_EFFORT_LEVEL=max`; DeepSeek enables thinking by default and promotes complex Claude Code requests to maximum effort.
+- MiMo V2.5 and MiMo V2.5 Pro use their default enabled deep-thinking mode and the `[1m]` model suffix required by MiMo's Claude Code integration for 1M context. MiMo does not expose a DeepSeek-style effort ladder.
 
 ## Default Routes
 

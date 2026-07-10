@@ -4,6 +4,12 @@ from typing import Any
 
 
 CAPABILITY_TIERS = {"default", "high", "max"}
+MAX_CAPABILITY_MODELS = {
+    "deepseek_flash",
+    "deepseek_pro",
+    "mimo_v25",
+    "mimo_v25_pro",
+}
 
 TOP_CONTEXT_STANDARD: dict[str, Any] = {
     "context_policy": "top",
@@ -17,7 +23,7 @@ _MODEL_TIER_SETTINGS: dict[str, dict[str, dict[str, Any]]] = {
     "deepseek_flash": {
         "default": {"effort": "low"},
         "high": {"effort": "medium"},
-        "max": {"effort": "high"},
+        "max": {"effort": "max"},
     },
     "deepseek_pro": {
         "default": {"effort": "medium"},
@@ -76,6 +82,8 @@ def normalize_capability_tier(value: str | None, intensity: str | None = None) -
 
 def capability_profile(model: str, tier: str | None = None, intensity: str | None = None) -> dict[str, Any]:
     normalized_tier = normalize_capability_tier(tier, intensity)
+    if model in MAX_CAPABILITY_MODELS:
+        normalized_tier = "max"
     model_settings = _MODEL_TIER_SETTINGS.get(model, {})
     tier_settings = dict(model_settings.get(normalized_tier) or model_settings.get("default") or {})
     return {

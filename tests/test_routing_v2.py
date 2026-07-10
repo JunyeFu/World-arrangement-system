@@ -157,7 +157,7 @@ def test_route_contains_explanation_fields():
     assert data["selected_agent"] == data["selected_worker"]
     assert data["selected_llm"] == data["selected_model"]
     assert data["agent_llm"] == "claude code + deepseek V4 pro"
-    assert data["capability_tier"] == "default"
+    assert data["capability_tier"] == "max"
     assert data["capability_profile"]["context_policy"] == "top"
     assert data["capability_profile"]["context_budget"] == "max_available"
     assert data["task_labels"]["artifact_type"] == "docs"

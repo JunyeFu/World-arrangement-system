@@ -112,7 +112,8 @@ def fallback_models(chain: list[dict[str, Any]]) -> list[str]:
 
 
 def claude_route(model: str, intensity: str) -> dict[str, Any]:
-    tier = normalize_capability_tier(None, intensity)
+    requested_tier = normalize_capability_tier(None, intensity)
+    profile = capability_profile(model, requested_tier, intensity)
     return {
         "selected_worker": "claude_code",
         "selected_agent": "claude_code",
@@ -120,8 +121,8 @@ def claude_route(model: str, intensity: str) -> dict[str, Any]:
         "selected_llm": model,
         "intensity": intensity,
         "variant": None,
-        "capability_tier": tier,
-        "capability_profile": capability_profile(model, tier, intensity),
+        "capability_tier": profile["tier"],
+        "capability_profile": profile,
     }
 
 

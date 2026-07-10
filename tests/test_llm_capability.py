@@ -23,8 +23,16 @@ def test_non_variant_capabilities_use_top_context_standard():
         assert profile["prompt_budget"] == "max_available"
 
 
+def test_claude_code_models_always_use_max_capability():
+    for model in ["deepseek_flash", "deepseek_pro", "mimo_v25", "mimo_v25_pro"]:
+        for requested_tier in ["default", "high", "max"]:
+            profile = capability_profile(model, requested_tier)
+            assert profile["tier"] == "max"
+            assert profile["effort"] == "max"
+
+
 def test_capability_env_exports_standard_fields():
     env = env_for_capability(capability_profile("deepseek_pro", "high"))
-    assert env["AI_ORCHESTRATOR_CAPABILITY_TIER"] == "high"
+    assert env["AI_ORCHESTRATOR_CAPABILITY_TIER"] == "max"
     assert env["AI_ORCHESTRATOR_CONTEXT_POLICY"] == "top"
-    assert env["CLAUDE_CODE_EFFORT_LEVEL"] == "high"
+    assert env["CLAUDE_CODE_EFFORT_LEVEL"] == "max"

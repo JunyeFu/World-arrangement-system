@@ -291,8 +291,9 @@ def _enforce_hard_rules(decision: RouteV2, task_type: str, risk_level: str, proj
 
 def _apply_capability_profile(route: Route) -> Route:
     tier_hint = route.variant if route.selected_worker == "opencode" and route.variant in {"high", "max"} else route.capability_tier
-    route.capability_tier = normalize_capability_tier(tier_hint, route.intensity)
-    route.capability_profile = capability_profile(route.selected_model, route.capability_tier, route.intensity)
+    requested_tier = normalize_capability_tier(tier_hint, route.intensity)
+    route.capability_profile = capability_profile(route.selected_model, requested_tier, route.intensity)
+    route.capability_tier = str(route.capability_profile.get("tier") or requested_tier)
     if route.selected_worker == "opencode":
         route.variant = route.capability_profile.get("variant")
     return route

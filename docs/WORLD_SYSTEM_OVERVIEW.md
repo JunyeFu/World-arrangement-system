@@ -41,10 +41,10 @@ World Core
 
 | Combination | Internal agent | Internal LLM key | Role |
 |---|---|---|---|
-| claude code + deepseek V4 flash | `claude_code` | `deepseek_flash` | low-cost quick tasks |
-| claude code + deepseek V4 pro | `claude_code` | `deepseek_pro` | default docs, tests, and ordinary coding |
-| claude code + Mimo V2.5 | `claude_code` | `mimo_v25` | multimodal, UI, and design analysis |
-| claude code + Mimo V2.5 pro | `claude_code` | `mimo_v25_pro` | stronger multimodal-to-code tasks |
+| claude code + deepseek V4 flash | `claude_code` | `deepseek_flash` | quick tasks with DeepSeek max effort |
+| claude code + deepseek V4 pro | `claude_code` | `deepseek_pro` | docs, tests, and coding with DeepSeek max effort |
+| claude code + Mimo V2.5 | `claude_code` | `mimo_v25` | multimodal/UI analysis with deep thinking and 1M context |
+| claude code + Mimo V2.5 pro | `claude_code` | `mimo_v25_pro` | multimodal-to-code with deep thinking and 1M context |
 | opencode + GLM 5.2 | `opencode` | `opencode-go/glm-5.2` | complex coding, hard bugfixes, escalation |
 | codex review | `codex_review` | `codex_reviewer` | final World Review |
 
@@ -55,6 +55,7 @@ World Core
 - MiMo V2.5 and MiMo V2.5 Pro run through Claude Code, not an independent MiMo worker.
 - World does not auto-merge.
 - World must not read or write secrets.
+- WSL Claude Code credentials and World provider profiles are private local configuration and are never committed or emitted in task artifacts.
 - Archived sample reports are evidence, not current roadmap instructions.
 
 ## Current Docs

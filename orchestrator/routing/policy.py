@@ -63,14 +63,15 @@ def build_retry_chain(
 
     ClaudeCodeWorker failure → OpenCodeWorker high → OpenCodeWorker max.
     """
-    primary_tier = normalize_capability_tier(None, resolved.intensity)
+    requested_tier = normalize_capability_tier(None, resolved.intensity)
+    primary_profile = capability_profile(resolved.model, requested_tier, resolved.intensity)
     chain = [{
         "worker": resolved.worker,
         "model": resolved.model,
         "intensity": resolved.intensity,
         "variant": resolved.variant,
-        "capability_tier": primary_tier,
-        "capability_profile": capability_profile(resolved.model, primary_tier, resolved.intensity),
+        "capability_tier": primary_profile["tier"],
+        "capability_profile": primary_profile,
     }]
 
     if resolved.worker == "claude_code":

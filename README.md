@@ -61,7 +61,7 @@ OpenCode owns GLM provider access. Claude Code provider profiles are loaded per 
 Windows PowerShell:
 
 ```powershell
-cd C:\Users\fujunye\Documents\World系统
+cd D:\Agent\World-system
 uv sync --all-extras --dev
 ```
 

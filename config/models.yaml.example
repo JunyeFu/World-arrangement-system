@@ -12,7 +12,7 @@ models:
     agent_llm: "claude code + deepseek V4 pro"
     capability_tiers: ["default", "high", "max"]
     context_policy: "top"
-    description: "claude code + deepseek V4 pro：默认后端，普通 coding、文档、测试、常规任务"
+    description: "claude code + deepseek V4 pro：默认后端，始终使用最高能力档"
     env_profile: "profiles/deepseek_pro.env"
     worker: "claude_code"
 
@@ -23,29 +23,29 @@ models:
     agent_llm: "claude code + deepseek V4 flash"
     capability_tiers: ["default", "high", "max"]
     context_policy: "top"
-    description: "claude code + deepseek V4 flash：低成本快速子任务后端"
+    description: "claude code + deepseek V4 flash：快速子任务后端，始终使用最高能力档"
     env_profile: "profiles/deepseek_flash.env"
     worker: "claude_code"
 
   mimo_v25:
     provider: mimo
     adapter: claude_code
-    model: "mimo-v2.5"
+    model: "mimo-v2.5[1m]"
     agent_llm: "claude code + Mimo V2.5"
     capability_tiers: ["default", "high", "max"]
     context_policy: "top"
-    description: "claude code + Mimo V2.5：多模态、UI/设计稿理解、轻量分析"
+    description: "claude code + Mimo V2.5：默认 deep thinking + 1M 上下文"
     env_profile: "profiles/mimo_v25.env"
     worker: "claude_code"
 
   mimo_v25_pro:
     provider: mimo
     adapter: claude_code
-    model: "mimo-v2.5-pro"
+    model: "mimo-v2.5-pro[1m]"
     agent_llm: "claude code + Mimo V2.5 pro"
     capability_tiers: ["default", "high", "max"]
     context_policy: "top"
-    description: "claude code + Mimo V2.5 pro：Agent/Coding 与高强度多模态代码任务"
+    description: "claude code + Mimo V2.5 pro：默认 deep thinking + 1M 上下文"
     env_profile: "profiles/mimo_v25_pro.env"
     worker: "claude_code"
 
