@@ -9,6 +9,7 @@ from typing import Any, Callable
 from .artifacts import ArtifactStore
 from .failure_classifier import FailureClassification
 from .post_attempt_policy import decide_post_attempt
+from .opencode_failover import annotate_opencode_attempt, build_handoff_context, counterpart_attempt, execution_side
 from .task_protocol import apply_read_budget_to_route
 from .worker_attempts import build_retry_chain
 
@@ -65,12 +66,12 @@ class TaskAttemptRunner:
         worktree_path: Path,
         dry_run: bool = False,
     ) -> AttemptRunResult:
-        retry_chain = build_retry_chain(route, task)
+        retry_chain = [annotate_opencode_attempt(item) for item in build_retry_chain(route, task)]
         last_failure: FailureClassification | None = None
         last_attempt: dict[str, Any] | None = None
 
         for idx, attempt in enumerate(retry_chain):
-            attempt = apply_read_budget_to_route(attempt, task)
+            attempt = annotate_opencode_attempt(apply_read_budget_to_route(attempt, task))
             outcome = self.attempt_executor.run(
                 task_id=task_id,
                 task=task,
@@ -91,6 +92,31 @@ class TaskAttemptRunner:
             if failure:
                 last_failure = failure
                 last_attempt = attempt
+
+            if self._schedule_opencode_quota_failover(
+                task_id=task_id,
+                task=task,
+                retry_chain=retry_chain,
+                attempt_index=idx,
+                attempt=attempt,
+                worker_result=worker_result,
+                failure=failure,
+                worktree_path=worktree_path,
+            ):
+                self._record_transition(
+                    task_id,
+                    "RETRYING",
+                    "opencode_quota_failover",
+                    {
+                        "failed_attempt": idx + 1,
+                        "source_side": execution_side(attempt),
+                        "target_side": retry_chain[idx + 1]["execution_side"],
+                        "source_model": attempt.get("model"),
+                        "target_model": retry_chain[idx + 1]["model"],
+                        "reason": failure.failure_reason if failure else "opencode_quota_exhausted",
+                    },
+                )
+                continue
 
             decision = decide_post_attempt(
                 task=task,
@@ -240,3 +266,45 @@ class TaskAttemptRunner:
     def _record_transition(self, task_id: str, status: str | None, event_type: str | None, payload: dict[str, Any]) -> None:
         if status and event_type:
             self.set_status(task_id, status, event_type, payload)
+
+    def _schedule_opencode_quota_failover(
+        self,
+        *,
+        task_id: str,
+        task: dict[str, Any],
+        retry_chain: list[dict[str, Any]],
+        attempt_index: int,
+        attempt: dict[str, Any],
+        worker_result: Any,
+        failure: FailureClassification | None,
+        worktree_path: Path,
+    ) -> bool:
+        if (
+            attempt.get("worker") != "opencode"
+            or failure is None
+            or failure.failure_reason != "opencode_quota_exhausted"
+        ):
+            return False
+        source_side = execution_side(attempt)
+        used_sides = set(task.get("opencode_failover_used_sides") or [])
+        used_sides.add(source_side)
+        target = counterpart_attempt(attempt)
+        if target is None or target["execution_side"] in used_sides:
+            task["opencode_failover_used_sides"] = sorted(used_sides)
+            return False
+        handoff = build_handoff_context(
+            task_id=task_id,
+            attempt=attempt,
+            worker_result=worker_result,
+            worktree=worktree_path,
+        )
+        task["opencode_handoff"] = handoff
+        task["opencode_failover_used_sides"] = sorted(used_sides)
+        self.artifacts.write_json(task_id, f"handoff/opencode-quota-{attempt_index + 1}.json", handoff)
+        # Do not return to the side whose quota was exhausted later in this chain.
+        remaining = [
+            item for item in retry_chain[attempt_index + 1:]
+            if not (item.get("worker") == "opencode" and execution_side(item) == source_side)
+        ]
+        retry_chain[attempt_index + 1:] = [target, *remaining]
+        return True

@@ -379,9 +379,9 @@ def test_task_detail_includes_lifecycle_and_artifacts(tmp_path: Path):
     assert payload["task"]["task_id"] == task_id
     assert payload["task"]["route"]["worker"] == "Opencode"
     assert payload["task"]["route"]["model"] == "GLM-5.2"
-    assert payload["route_decision"]["selected_worker"] == "Opencode"
+    assert payload["route_decision"]["selected_worker"] == "OpenCode WSL"
     assert payload["route_decision"]["selected_model"] == "GLM-5.2"
-    assert payload["route_decision"]["agent_llm"] == "Claudecode + Deepseek-V4-pro"
+    assert payload["route_decision"]["agent_llm"] == "OpenCode WSL + GLM-5.2"
     assert payload["route_decision"]["fallback_models"] == ["Deepseek-V4-pro", "Mimo-V2.5"]
     assert payload["route_decision"]["reason"] == "Claudecode can escalate to Opencode with GLM-5.2"
     assert payload["timeline"][0]["event_type"] == "created"

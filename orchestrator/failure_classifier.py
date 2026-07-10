@@ -43,6 +43,11 @@ def classify_worker_failure(
         return FailureClassification("forbidden_path", False, "block_and_surface_policy_violation", evidence)
     if status == "cancelled" or "cancelled" in text:
         return FailureClassification("cancelled", False, "stop_without_retry", evidence)
+    if _contains_any(text, [
+        "quota exceeded", "quota exhausted", "insufficient quota", "usage limit",
+        "plan limit", "rate limit", "too many requests", "http 429", "status 429",
+    ]):
+        return FailureClassification("opencode_quota_exhausted", True, "failover_to_other_opencode_side", evidence)
     if _contains_any(text, ["auth", "unauthorized", "invalid api key", "401", "403"]):
         return FailureClassification("auth_failed", False, "stop_and_fix_provider_config", evidence)
     if _contains_any(text, ["not recognized", "not found", "command_missing", "cli unavailable", "program not found"]):

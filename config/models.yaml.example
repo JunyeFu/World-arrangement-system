@@ -76,6 +76,8 @@ models:
     context_policy: "top"
     description: "opencode + GLM 5.2：复杂编码、hard bugfix 与升级路线"
     worker: "opencode"
+    execution_side: "wsl"
+    failover_model: "opencode_windows_coding_plan"
     # default_variant: opencode CLI 只接受 high|max|minimal；写 "default" 等同省略 --variant（save quota）。
     default_variant: "high"
 
@@ -89,6 +91,8 @@ models:
     description: "opencode Windows + GLM 5.2：兼容模型键，实际通过 Windows Coding Plan 执行"
     worker: "opencode"
     worker_command: "opencode.cmd"
+    execution_side: "windows"
+    failover_model: "opencode_go_glm52"
     default_variant: "high"
 
   opencode_windows_coding_plan:
@@ -101,6 +105,8 @@ models:
     description: "OpenCode Windows Coding Plan：实际模型由运行时 OpenCode catalog 展示"
     worker: "opencode"
     worker_command: "opencode.cmd"
+    execution_side: "windows"
+    failover_model: "opencode_go_glm52"
     default_variant: "default"
 
   # ── Codex Review ──

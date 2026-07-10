@@ -85,6 +85,14 @@ def test_classifies_auth_and_command_errors():
     assert missing.retryable is False
 
 
+def test_classifies_opencode_quota_exhaustion_for_failover():
+    result = classify_worker_failure(status="failed", summary="HTTP 429 rate limit: usage quota exceeded")
+
+    assert result.failure_reason == "opencode_quota_exhausted"
+    assert result.retryable is True
+    assert result.recommended_action == "failover_to_other_opencode_side"
+
+
 def test_classifies_verify_and_review_failures():
     build = classify_verify_failure(tests_passed=True, build_passed=False, forbidden_allowed=True)
     forbidden = classify_verify_failure(tests_passed=True, build_passed=True, forbidden_allowed=False)

@@ -30,6 +30,7 @@ def build_worker_prompt(
     required_output = read_only_required_output_contract(task, read_only=read_only)
     profile_strategy = worker_profile_strategy(task)
     project_memory = _project_memory_section(task)
+    handoff_context = _opencode_handoff_section(task)
     task_section = (
         f"\n\n## Task Context\n\n"
         f"Task: {task['user_goal']}\n"
@@ -50,6 +51,7 @@ def build_worker_prompt(
         f"{read_only_completion_rule}"
         f"{required_output}"
         f"{project_memory}"
+        f"{handoff_context}"
         f"{profile_strategy}"
         "Return changed_files, summary, test_suggestions, risks, needs_user."
     )
@@ -77,3 +79,16 @@ def _project_memory_section(task: dict[str, Any]) -> str:
         return ""
     prompt = payload.get("prompt")
     return str(prompt) if isinstance(prompt, str) else ""
+
+
+def _opencode_handoff_section(task: dict[str, Any]) -> str:
+    handoff = task.get("opencode_handoff")
+    if not isinstance(handoff, dict):
+        return ""
+    return (
+        "\n## Cross-Side OpenCode Continuation\n\n"
+        "The previous OpenCode side reached its usage limit. You are continuing the same task "
+        "in the same git worktree. Do not discard, revert, or duplicate the existing changes. "
+        "Run `git diff` first, preserve the useful progress, then continue only the remaining work.\n"
+        f"{json.dumps(handoff, ensure_ascii=False, indent=2)}\n"
+    )

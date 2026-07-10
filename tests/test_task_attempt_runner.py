@@ -126,3 +126,55 @@ def test_attempt_runner_returns_preflight_denied_terminal_signal(tmp_path: Path)
     assert result.terminal_event == "permission_denied"
     assert result.policy_signal.incident is True
     assert result.policy_signal.worker == "claude_code"
+
+
+def test_attempt_runner_fails_over_to_other_opencode_side_on_quota(tmp_path: Path, monkeypatch):
+    home = tmp_path / "runtime"
+    home.mkdir()
+    (home / "models.yaml").write_text(
+        "models:\n"
+        "  opencode_go_glm52:\n"
+        "    execution_side: wsl\n"
+        "    failover_model: opencode_windows_coding_plan\n"
+        "  opencode_windows_coding_plan:\n"
+        "    execution_side: windows\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AI_ORCHESTRATOR_HOME", str(home))
+    statuses = []
+    quota = FailureClassification("opencode_quota_exhausted", True, "failover_to_other_opencode_side", ["HTTP 429"])
+    failed = WorkerResult(
+        status="failed",
+        summary="usage quota exceeded after parser changes",
+        changed_files=["src/parser.py"],
+        session_id="ses_source",
+    )
+    succeeded = WorkerResult(status="success", summary="continued", changed_files=["src/parser.py", "tests/test_parser.py"])
+    runner = _runner(
+        tmp_path,
+        [
+            WorkerAttemptOutcome("completed", {"worker": "opencode", "model": "opencode_go_glm52"}, worker_result=failed, failure=quota),
+            WorkerAttemptOutcome("completed", {"worker": "opencode", "model": "opencode_windows_coding_plan"}, worker_result=succeeded),
+        ],
+        statuses=statuses,
+    )
+    task = {**_task(tmp_path), "task_mode": "patch", "expected_diff": True}
+
+    result = runner.run(
+        task_id="t_attempts",
+        task=task,
+        route={
+            "selected_worker": "opencode",
+            "selected_model": "opencode_go_glm52",
+            "retry_chain": [{"worker": "opencode", "model": "opencode_go_glm52", "variant": "high"}],
+        },
+        worktree_path=tmp_path,
+    )
+
+    executor = runner.attempt_executor
+    assert result.completed is True
+    assert executor.calls[1]["attempt"]["model"] == "opencode_windows_coding_plan"
+    assert executor.calls[1]["attempt"]["execution_side"] == "windows"
+    assert task["opencode_handoff"]["source_session_id"] == "ses_source"
+    assert (Path(task["run_dir"]) / "handoff" / "opencode-quota-1.json").exists()
+    assert statuses[0][1:3] == ("RETRYING", "opencode_quota_failover")

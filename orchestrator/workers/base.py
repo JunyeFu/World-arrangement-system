@@ -22,6 +22,7 @@ class WorkerResult:
     degradation_reason: str | None = None
     mock_result: bool = False
     partial_result: bool = False
+    session_id: str | None = None
 
 
 class Worker:

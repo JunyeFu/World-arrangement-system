@@ -244,6 +244,7 @@ class OpenCodeWorker(Worker):
             patch_file=patch_file,
             tests_run=[],
             rollback_notes=rollback_notes,
+            session_id=_extract_opencode_session_id(stdout_path),
         )
 
 
@@ -293,4 +294,24 @@ def _event_text(event: dict) -> str | None:
             ).strip()
             if text:
                 return text
+    return None
+
+
+def _extract_opencode_session_id(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    try:
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8", errors="replace").splitlines()]
+    except (OSError, json.JSONDecodeError):
+        return None
+    for row in reversed(rows):
+        if not isinstance(row, dict):
+            continue
+        for key in ("sessionID", "session_id"):
+            value = row.get(key)
+            if isinstance(value, str) and value:
+                return value
+        session = row.get("session")
+        if isinstance(session, dict) and isinstance(session.get("id"), str):
+            return session["id"]
     return None

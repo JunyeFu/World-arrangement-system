@@ -493,6 +493,18 @@ def test_opencode_worker_summary_uses_stdout_text_event(monkeypatch, tmp_path):
     assert result.summary == expected
 
 
+def test_opencode_worker_extracts_session_id_from_jsonl(tmp_path):
+    from orchestrator.workers.opencode_worker import _extract_opencode_session_id
+
+    stream = tmp_path / "worker.stdout.jsonl"
+    stream.write_text(
+        '{"type":"session","session":{"id":"ses_123"}}\n',
+        encoding="utf-8",
+    )
+
+    assert _extract_opencode_session_id(stream) == "ses_123"
+
+
 def test_opencode_worker_still_blocks_denied_launcher_env(monkeypatch, tmp_path):
     called = {"run": False}
 
