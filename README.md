@@ -180,7 +180,7 @@ The Metrics page currently includes:
 - Total cost
 - P95 duration with automatic time units
 - Efficiency
-- Completed task summary and quality outcomes
+- Data page with model performance, quality outcomes, and token usage
 - Model call table
 - Codex Budget
 
