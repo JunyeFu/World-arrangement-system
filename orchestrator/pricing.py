@@ -13,6 +13,7 @@ class TokenPrice:
 
 
 PRICES_USD_PER_MILLION = {
+    "gpt-5.5": TokenPrice(Decimal("5.00"), Decimal("0.50"), Decimal("30.00")),
     "deepseek_flash": TokenPrice(Decimal("0.14"), Decimal("0.0028"), Decimal("0.28")),
     "deepseek-v4-flash": TokenPrice(Decimal("0.14"), Decimal("0.0028"), Decimal("0.28")),
     "deepseek_pro": TokenPrice(Decimal("0.435"), Decimal("0.003625"), Decimal("0.87")),

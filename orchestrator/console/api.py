@@ -59,7 +59,7 @@ class ConsoleAPI:
             return 200, "application/json", self.queries.metrics_usage(_int(params.get("limit"), 200))
         if path == "/api/metrics/efficiency":
             return 200, "application/json", self.queries.metrics_efficiency(
-                params.get("reference_model") or "opencode-go/glm-5.2"
+                params.get("reference_model") or "gpt-5.5"
             )
         if path == "/api/metrics/quality":
             return 200, "application/json", self.queries.metrics_quality(

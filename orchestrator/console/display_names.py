@@ -5,6 +5,7 @@ from typing import Any
 
 
 MODEL_DISPLAY_NAMES = {
+    "gpt-5.5": "GPT-5.5",
     "deepseek_flash": "Deepseek-V4-flash",
     "deepseek-v4-flash": "Deepseek-V4-flash",
     "deepseek_pro": "Deepseek-V4-pro",
@@ -51,6 +52,7 @@ AGENT_KEYS = {
 }
 
 DISPLAY_TEXT_REPLACEMENTS = (
+    ("gpt-5.5", "GPT-5.5"),
     ("opencode-go/glm-5.2", "GLM-5.2"),
     ("opencode_go_glm52", "GLM-5.2"),
     ("deepseek-v4-pro[1m]", "Deepseek-V4-pro"),

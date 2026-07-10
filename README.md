@@ -194,7 +194,7 @@ Measured:
 - Worker output tokens
 - Worker cache-read input tokens
 - Worker model cost computed by backend pricing
-- Same-token GLM-5.2 reference baseline
+- Same-token GPT-5.5 reference baseline
 - Savings amount and savings percentage
 
 Estimated:

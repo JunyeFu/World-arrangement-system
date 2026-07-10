@@ -802,11 +802,11 @@ def test_metrics_efficiency_reports_real_token_cost_and_reference_baseline(tmp_p
     status, _, payload = api.handle_get("/api/metrics/efficiency")
 
     assert status == 200
-    assert payload["reference_model"] == "GLM-5.2"
+    assert payload["reference_model"] == "GPT-5.5"
     assert payload["actual_cost_usd"] == 0.1694
-    assert payload["reference_cost_usd"] == 1.97
-    assert payload["savings_usd"] == 1.8006
-    assert payload["savings_pct"] == 91.4
+    assert payload["reference_cost_usd"] == 8.25
+    assert payload["savings_usd"] == 8.0806
+    assert payload["savings_pct"] == 97.95
     assert payload["total_tokens"] == 1_600_000
     assert payload["cache_read_ratio"] == 33.33
     assert payload["unpriced_attempts"] == 0
@@ -832,7 +832,7 @@ def test_metrics_efficiency_reports_real_token_cost_and_reference_baseline(tmp_p
     assert payload["baseline"]["rows"][0]["status"] == "measured"
     assert payload["by_model"][0]["model"] == "Deepseek-V4-flash"
     assert payload["by_model"][0]["pricing_complete"] is True
-    assert payload["by_model"][0]["savings_usd"] == 1.8006
+    assert payload["by_model"][0]["savings_usd"] == 8.0806
 
 
 def test_metrics_quality_backfills_task_outcomes(tmp_path: Path):

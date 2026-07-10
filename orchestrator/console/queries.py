@@ -300,7 +300,7 @@ class ConsoleQueries:
         rows = [metric_view(row) for row in self.db.list_recent_task_metrics(limit=limit)]
         return build_metrics_usage(rows)
 
-    def metrics_efficiency(self, reference_model: str = "opencode-go/glm-5.2") -> dict[str, Any]:
+    def metrics_efficiency(self, reference_model: str = "gpt-5.5") -> dict[str, Any]:
         rows = self._metric_rows()
         tasks = self.db.list_tasks(limit=500)
         codex = _codex_usage_summary(self.db.list_codex_usage_events(limit=2000))
