@@ -850,7 +850,7 @@ def test_metrics_efficiency_reports_real_token_cost_and_reference_baseline(tmp_p
     assert payload["by_model"][0]["savings_usd"] == 8.0806
 
 
-def test_metrics_quality_backfills_task_outcomes(tmp_path: Path):
+def test_metrics_quality_backfills_task_outcomes_without_scanning_worktree(tmp_path: Path, monkeypatch):
     service = StubService(tmp_path)
     task_id = _create_task(service, status="COMPLETED_WITH_PATCH", task_id="task_quality")
     service.artifacts.write_json(task_id, "task.json", {
@@ -886,6 +886,11 @@ def test_metrics_quality_backfills_task_outcomes(tmp_path: Path):
         "review_approved": True,
         "created_at": "2026-06-29T00:00:00Z",
     })
+    monkeypatch.setattr(
+        service.artifacts,
+        "index",
+        lambda _task_id: (_ for _ in ()).throw(AssertionError("quality backfill must not scan worktrees")),
+    )
     api = ConsoleAPI(service)  # type: ignore[arg-type]
 
     status, _, payload = api.handle_get("/api/metrics/quality")

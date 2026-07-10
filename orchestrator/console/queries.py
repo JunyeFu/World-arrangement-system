@@ -425,11 +425,10 @@ class ConsoleQueries:
             task_id = str(task.get("task_id") or "")
             if not task_id or not should_record_outcome(status) or self.db.get_task_outcome(task_id):
                 continue
-            artifact_index = self.artifacts.index(task_id)
-            task_artifact = self._read_artifact_json(artifact_index, "task.json") or {}
-            verify = self._read_artifact_json(artifact_index, "verify/verify.json") or {}
-            review = self._read_artifact_json(artifact_index, "review/review.json") or {}
-            result = self._read_artifact_json(artifact_index, "result.json") or {}
+            task_artifact = self._read_task_artifact_json(task, "task.json") or {}
+            verify = self._read_task_artifact_json(task, "verify/verify.json") or {}
+            review = self._read_task_artifact_json(task, "review/review.json") or {}
+            result = self._read_task_artifact_json(task, "result.json") or {}
             outcome = derive_task_outcome(
                 task,
                 metrics=self.db.list_task_metrics(task_id),
@@ -467,17 +466,23 @@ class ConsoleQueries:
         return value if isinstance(value, dict) else {"value": value}
 
     def _read_result_summary(self, task: dict[str, Any]) -> str | None:
+        value = self._read_task_artifact_json(task, "result.json")
+        summary = value.get("summary") if isinstance(value, dict) else None
+        return str(summary).strip() if isinstance(summary, str) and summary.strip() else None
+
+    def _read_task_artifact_json(self, task: dict[str, Any], relative: str) -> dict[str, Any] | None:
         run_dir = task.get("run_dir")
         if not run_dir:
             return None
         try:
-            path = (Path(str(run_dir)) / "result.json").resolve()
-            path.relative_to(self.artifacts.root)
+            base = Path(str(run_dir)).resolve()
+            base.relative_to(self.artifacts.root)
+            path = (base / relative).resolve()
+            path.relative_to(base)
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError, json.JSONDecodeError):
             return None
-        summary = value.get("summary") if isinstance(value, dict) else None
-        return str(summary).strip() if isinstance(summary, str) and summary.strip() else None
+        return value if isinstance(value, dict) else {"value": value}
 
 
 def _with_result_summary(task: dict[str, Any], summary: str | None) -> dict[str, Any]:

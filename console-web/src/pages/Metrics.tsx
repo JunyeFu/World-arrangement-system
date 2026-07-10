@@ -6,12 +6,13 @@ export function Metrics({ snapshot }: { snapshot: ConsoleSnapshot }) {
   const [usage, setUsage] = useState<MetricsUsage | null>(null);
   const [efficiency, setEfficiency] = useState<MetricsEfficiency | null>(null);
   const [quality, setQuality] = useState<MetricsQuality | null>(null);
+  const [qualityError, setQualityError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.metricsUsage().then(setUsage).catch((err) => setError(err.message));
     api.metricsEfficiency().then(setEfficiency).catch((err) => setError(err.message));
-    api.metricsQuality().then(setQuality).catch((err) => setError(err.message));
+    api.metricsQuality().then(setQuality).catch((err) => setQualityError(err.message));
   }, []);
 
   return (
@@ -26,7 +27,7 @@ export function Metrics({ snapshot }: { snapshot: ConsoleSnapshot }) {
         </div>
       </section>
       <ModelSummary models={snapshot.models} />
-      <QualityPanel quality={quality} />
+      <QualityPanel quality={quality} error={qualityError} />
       <EfficiencyPanel efficiency={efficiency} />
       <section className="panel metrics-wide">
         <h2>Cost by Model</h2>
@@ -41,14 +42,16 @@ export function Metrics({ snapshot }: { snapshot: ConsoleSnapshot }) {
   );
 }
 
-function QualityPanel({ quality }: { quality: MetricsQuality | null }) {
+function QualityPanel({ quality, error }: { quality: MetricsQuality | null; error: string | null }) {
   return (
     <section className="panel metrics-wide">
       <div className="panel-head">
         <h2>Quality Matrix</h2>
         {quality && <span className="process-count">{quality.summary.total}</span>}
       </div>
-      {!quality ? (
+      {!quality && error ? (
+        <div className="banner">Quality metrics unavailable: {error}</div>
+      ) : !quality ? (
         <div className="empty-process"><Gauge size={20} /><span>Loading quality metrics...</span></div>
       ) : (
         <>
