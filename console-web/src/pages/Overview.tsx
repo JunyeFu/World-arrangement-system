@@ -4,6 +4,7 @@ import { api, ConsoleSnapshot } from "../api/client";
 import { HealthMetricKey, HealthStrip } from "../components/HealthStrip";
 import { LiveTaskTable } from "../components/LiveTaskTable";
 import { ProcessCards } from "../components/ProcessCards";
+import { OpenCodeModels } from "../components/OpenCodeModels";
 
 export function Overview({
   snapshot,
@@ -45,6 +46,7 @@ export function Overview({
           }
         }}
       />
+      <OpenCodeModels catalog={snapshot.opencode} />
       {snapshot.alerts.length > 0 && (
         <section className="alerts">
           {snapshot.alerts.map((alert) => (

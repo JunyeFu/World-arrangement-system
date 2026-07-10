@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://world.local/schemas/console_snapshot.json",
   "type": "object",
-  "required": ["health", "tasks", "alerts", "heartbeats", "metrics", "models"],
+  "required": ["health", "tasks", "alerts", "heartbeats", "metrics", "models", "opencode"],
   "properties": {
     "health": {
       "type": "object",
@@ -39,7 +39,8 @@
     "alerts": {"type": "array"},
     "heartbeats": {"type": "array"},
     "metrics": {"type": "object"},
-    "models": {"type": "array"}
+    "models": {"type": "array"},
+    "opencode": {"type": "object"}
   },
   "additionalProperties": true
 }

@@ -9,6 +9,7 @@ AGENT_LLM_COMBINATIONS: dict[tuple[str, str], str] = {
     ("opencode", "opencode-go/glm-5.2"): "opencode + GLM 5.2",
     ("opencode", "opencode_go_glm52"): "opencode + GLM 5.2",
     ("opencode", "opencode_windows_go_glm52"): "opencode Windows + GLM 5.2",
+    ("opencode", "opencode_windows_coding_plan"): "opencode Windows Coding Plan",
     ("codex_review", "codex_reviewer"): "codex + GPT 5.5",
 }
 

@@ -15,6 +15,7 @@ from orchestrator.dashboard_status import (
 )
 from orchestrator.db import TaskDB
 from orchestrator.outcomes import derive_task_outcome, should_record_outcome, summarize_outcomes
+from orchestrator.opencode_models import DEFAULT_OPENCODE_MODEL_DISCOVERY, OpenCodeModelDiscovery
 
 from .display_names import display_agent_name, display_model_name, display_route_tree
 from .alerts import evaluate_alerts
@@ -43,10 +44,42 @@ CONSOLE_GROUP_DESCRIPTIONS = {
 }
 
 
+def _display_route_with_opencode(route: Any, catalog: dict[str, Any]) -> Any:
+    displayed = display_route_tree(route)
+    if not isinstance(route, dict) or not isinstance(displayed, dict):
+        return displayed
+    worker = str(route.get("selected_worker") or route.get("worker") or "").lower()
+    model = str(route.get("selected_model") or route.get("model") or "")
+    if worker != "opencode" or not model:
+        return displayed
+    for endpoint in catalog.get("endpoints", []):
+        if not isinstance(endpoint, dict):
+            continue
+        for candidate in endpoint.get("models", []):
+            if not isinstance(candidate, dict) or candidate.get("id") != model:
+                continue
+            label = str(endpoint.get("label") or "OpenCode")
+            name = str(candidate.get("name") or model)
+            displayed["selected_worker"] = label
+            displayed["selected_agent"] = label
+            displayed["selected_model"] = name
+            displayed["selected_llm"] = name
+            displayed["agent_llm"] = f"{label} + {name}"
+            displayed["opencode_runtime"] = {
+                "side": endpoint.get("side"),
+                "status": candidate.get("status"),
+                "variants": candidate.get("variants", []),
+                "context_limit": candidate.get("context_limit"),
+            }
+            return displayed
+    return displayed
+
+
 class ConsoleQueries:
-    def __init__(self, db: TaskDB, artifacts: ArtifactStore):
+    def __init__(self, db: TaskDB, artifacts: ArtifactStore, opencode_models: OpenCodeModelDiscovery | None = None):
         self.db = db
         self.artifacts = artifacts
+        self.opencode_models = opencode_models or DEFAULT_OPENCODE_MODEL_DISCOVERY
 
     def snapshot(self) -> dict[str, Any]:
         alerts = [alert_view(row) for row in self.db.list_system_alerts(status="open", limit=50)]
@@ -60,6 +93,7 @@ class ConsoleQueries:
             if row.get("task_id") not in dismissed
         ]
         metrics = self.metrics_summary()
+        opencode = self.opencode_models.snapshot()
         counts = compute_top_status_counts(tasks, system_alert_count=len(alerts))
         return {
             "health": {
@@ -76,6 +110,7 @@ class ConsoleQueries:
             "heartbeats": heartbeats,
             "metrics": metrics,
             "models": self.model_metrics(),
+            "opencode": opencode,
         }
 
     def dashboard_summary(self, project_id: str | None = None, include_completed: bool = False) -> dict[str, Any]:
@@ -160,7 +195,7 @@ class ConsoleQueries:
         return {
             "task": _with_runtime_liveness(task_summary(task), live_task_ids, task),
             "timeline": events,
-            "route_decision": display_route_tree(route),
+            "route_decision": _display_route_with_opencode(route, self.opencode_models.snapshot()),
             "approval": approval,
             "verify": verify,
             "review": review,

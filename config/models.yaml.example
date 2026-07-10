@@ -80,16 +80,28 @@ models:
     default_variant: "high"
 
   opencode_windows_go_glm52:
-    provider: opencode_go
+    provider: agent_plan
     adapter: opencode_cli
-    model: "opencode-go/glm-5.2"
+    model: "agent-plan/glm-5-2-260617"
     agent_llm: "opencode Windows + GLM 5.2"
     capability_tiers: ["default", "high", "max"]
     context_policy: "top"
-    description: "opencode Windows + GLM 5.2：显式在 Windows 主机执行的 OpenCode 路线"
+    description: "opencode Windows + GLM 5.2：兼容模型键，实际通过 Windows Coding Plan 执行"
     worker: "opencode"
-    worker_command: "opencode"
+    worker_command: "opencode.cmd"
     default_variant: "high"
+
+  opencode_windows_coding_plan:
+    provider: agent_plan
+    adapter: opencode_cli
+    model: "agent-plan/glm-5-2-260617"
+    agent_llm: "opencode Windows Coding Plan"
+    capability_tiers: ["default", "high", "max"]
+    context_policy: "top"
+    description: "OpenCode Windows Coding Plan：实际模型由运行时 OpenCode catalog 展示"
+    worker: "opencode"
+    worker_command: "opencode.cmd"
+    default_variant: "default"
 
   # ── Codex Review ──
 

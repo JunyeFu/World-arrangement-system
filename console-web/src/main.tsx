@@ -24,9 +24,9 @@ function App() {
     <main>
       <aside>
         <div className="brand"><Activity size={22} /> World</div>
-        <button className={page === "overview" ? "active" : ""} onClick={() => setPage("overview")}><LayoutDashboard size={17} /> Overview</button>
-        <button className={page === "metrics" ? "active" : ""} onClick={() => setPage("metrics")}><BarChart3 size={17} /> Metrics</button>
-        <button className={page === "audit" ? "active" : ""} onClick={() => setPage("audit")}><ClipboardList size={17} /> Audit</button>
+        <button aria-label="Overview" className={page === "overview" ? "active" : ""} onClick={() => setPage("overview")}><LayoutDashboard size={17} /> <span className="nav-label">Overview</span></button>
+        <button aria-label="Metrics" className={page === "metrics" ? "active" : ""} onClick={() => setPage("metrics")}><BarChart3 size={17} /> <span className="nav-label">Metrics</span></button>
+        <button aria-label="Audit" className={page === "audit" ? "active" : ""} onClick={() => setPage("audit")}><ClipboardList size={17} /> <span className="nav-label">Audit</span></button>
       </aside>
       <section className="workspace">
         {error && <div className="banner">{error}</div>}

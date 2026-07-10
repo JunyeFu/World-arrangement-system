@@ -381,7 +381,7 @@ def test_opencode_windows_model_uses_direct_windows_command(monkeypatch, tmp_pat
 
     def _spec(model):
         assert model == "opencode_windows_go_glm52"
-        return {"model": "opencode-go/glm-5.2", "worker_command": "opencode"}
+        return {"model": "opencode-go/glm-5.2", "worker_command": "opencode.cmd"}
 
     def _success(cmd, **kwargs):
         observed["cmd"] = cmd
@@ -407,7 +407,7 @@ def test_opencode_windows_model_uses_direct_windows_command(monkeypatch, tmp_pat
     result = worker.run("prompt", tmp_path, {"selected_model": "opencode_windows_go_glm52"}, task)
 
     assert result.status == "success"
-    assert observed["cmd"][0] == "opencode"
+    assert observed["cmd"][0] == "opencode.cmd"
     assert observed["cwd"] == tmp_path
 
 

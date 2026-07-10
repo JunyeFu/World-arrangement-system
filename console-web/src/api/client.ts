@@ -12,6 +12,28 @@ export type ConsoleSnapshot = {
   alerts: Alert[];
   metrics: MetricsSummary;
   models: ModelMetric[];
+  opencode: OpenCodeCatalog;
+};
+
+export type OpenCodeModel = {
+  id: string;
+  name: string;
+  status: string;
+  variants: string[];
+  context_limit: number | null;
+  toolcall: boolean;
+};
+
+export type OpenCodeCatalog = {
+  refreshed_at: number;
+  cache_seconds: number;
+  endpoints: Array<{
+    side: "windows" | "wsl";
+    label: string;
+    available: boolean;
+    detail: string;
+    models: OpenCodeModel[];
+  }>;
 };
 
 export type TaskSummary = {
@@ -240,6 +262,7 @@ export const api = {
   metricsEfficiency: () => getJson<MetricsEfficiency>("/api/metrics/efficiency"),
   metricsQuality: (projectId?: string) => getJson<MetricsQuality>(`/api/metrics/quality?limit=500${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`),
   models: () => getJson<{ models: ModelMetric[] }>("/api/metrics/models"),
+  opencodeModels: () => getJson<OpenCodeCatalog>("/api/runtime/opencode-models?refresh=true"),
   audit: () => getJson<{ events: TimelineEvent[] }>("/api/audit?limit=100"),
   cancelTask: (taskId: string) => postJson(`/api/tasks/${encodeURIComponent(taskId)}/cancel`, { reason: "console cancel" }),
   retryTask: (taskId: string) => postJson(`/api/tasks/${encodeURIComponent(taskId)}/retry`, {}),

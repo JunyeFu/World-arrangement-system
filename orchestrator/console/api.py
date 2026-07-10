@@ -53,6 +53,8 @@ class ConsoleAPI:
             return 200, "application/json", self.queries.metrics_summary()
         if path == "/api/metrics/models":
             return 200, "application/json", {"models": self.queries.model_metrics()}
+        if path == "/api/runtime/opencode-models":
+            return 200, "application/json", self.queries.opencode_models.snapshot(refresh=_bool(params.get("refresh")))
         if path == "/api/metrics/usage":
             return 200, "application/json", self.queries.metrics_usage(_int(params.get("limit"), 200))
         if path == "/api/metrics/efficiency":

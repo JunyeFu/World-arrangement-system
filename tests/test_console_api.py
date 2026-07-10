@@ -7,6 +7,7 @@ from jsonschema import validate
 from orchestrator.artifacts import ArtifactStore
 from orchestrator.console.api import ConsoleAPI
 from orchestrator.console.queries import ConsoleQueries
+from orchestrator.opencode_models import OpenCodeModelDiscovery
 from orchestrator.db import TaskDB
 
 
@@ -99,6 +100,32 @@ def test_console_snapshot_matches_schema_and_redacts(tmp_path: Path):
     validate(payload, schema)
     assert status == 200
     assert "fake-redacted-value" not in json.dumps(payload)
+
+
+def test_console_task_detail_uses_discovered_opencode_model_display(tmp_path: Path):
+    service = StubService(tmp_path)
+    task_id = _create_task(service)
+    service.artifacts.write_json(task_id, "route.json", {
+        "selected_worker": "opencode",
+        "selected_model": "agent-plan/glm-5-2-260617",
+    })
+
+    def runner(command: str):
+        model = "agent-plan/glm-5-2-260617" if command == "opencode.cmd" else "opencode-go/glm-5.2"
+        return 0, f'{model}\n{{"name":"GLM 5.2","status":"active","variants":{{"high":{{}}}}}}', ""
+
+    import orchestrator.opencode_models as opencode_models
+    original_available = opencode_models.command_available
+    opencode_models.command_available = lambda command: (True, command)
+    try:
+        queries = ConsoleQueries(service.db, service.artifacts, OpenCodeModelDiscovery(runner=runner))
+        detail = queries.task_detail(task_id)
+    finally:
+        opencode_models.command_available = original_available
+
+    route = detail["route_decision"]
+    assert route["agent_llm"] == "OpenCode Windows + GLM 5.2"
+    assert route["opencode_runtime"]["side"] == "windows"
 
 
 def test_console_snapshot_does_not_count_stale_executing_without_heartbeat(tmp_path: Path):

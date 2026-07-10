@@ -49,6 +49,11 @@ _MODEL_TIER_SETTINGS: dict[str, dict[str, dict[str, Any]]] = {
         "high": {"effort": "high", "variant": "high"},
         "max": {"effort": "max", "variant": "max"},
     },
+    "opencode_windows_coding_plan": {
+        "default": {"effort": "medium", "variant": None},
+        "high": {"effort": "high", "variant": "high"},
+        "max": {"effort": "max", "variant": "max"},
+    },
     "codex_reviewer": {
         "default": {"effort": "high"},
         "high": {"effort": "high"},

@@ -86,7 +86,7 @@ def _ensure_builtin_self_project(projects: dict[str, dict[str, Any]]) -> None:
             "enabled": True,
             "write_policy": "zero_write",
             "runtime_backend": "external-global",
-            "workers": "wsl_only",
+            "workers": "windows_and_wsl",
         },
     }
 

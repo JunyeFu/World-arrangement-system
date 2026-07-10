@@ -112,6 +112,80 @@ aside button:hover {
   min-width: 0;
 }
 
+.opencode-endpoints {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.opencode-endpoint {
+  border: 1px solid #e0e6ee;
+  padding: 10px;
+  min-width: 0;
+}
+
+.opencode-endpoint-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.opencode-endpoint-head .status {
+  margin-left: auto;
+}
+
+.opencode-endpoint ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.opencode-endpoint li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  aside {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    padding: 10px 12px;
+  }
+
+  .brand {
+    flex: 0 0 auto;
+    margin: 0 8px 0 0;
+  }
+
+  aside button {
+    flex: 0 0 auto;
+    width: auto;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .nav-label {
+    display: none;
+  }
+
+  .workspace {
+    padding: 12px;
+  }
+
+  .health-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .opencode-endpoints {
+    grid-template-columns: 1fr;
+  }
+}
+
 .panel-head {
   display: flex;
   justify-content: space-between;
@@ -176,6 +250,11 @@ small {
 .status.running {
   color: #0d5b70;
   background: #e7f7fb;
+}
+
+.status.active {
+  color: #166534;
+  background: #eaf7ee;
 }
 
 .status.done,
