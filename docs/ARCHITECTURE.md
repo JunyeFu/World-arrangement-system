@@ -29,6 +29,8 @@ This makes concurrent provider execution safe:
 
 When Codex runs on Windows but workers live in WSL, command overrides such as `AI_CLAUDE_CMD="wsl -e claude"` are supported. The worker injects provider variables through `wsl -e env KEY=VALUE ...`.
 
+Some Windows proxy clients return fake-IP addresses such as `198.18.*` to WSL. In that setup, declare `HTTP_PROXY` and `HTTPS_PROXY` in each affected local provider profile (for example, `http://127.0.0.1:7897`). World forwards those proxy values only to the selected worker. It never inherits proxy variables from the parent process, so provider isolation remains intact. A TLS handshake timeout after a successful Claude initialization event is an outbound-network failure and should be diagnosed before increasing a task timeout.
+
 ## Boundary Choice
 
 This implementation uses the package name `orchestrator/` because `ORCHESTRATOR_FULL_PACK.md` specifies that executable layout. The research report's `ai_orchestrator/` name is treated as equivalent conceptually.

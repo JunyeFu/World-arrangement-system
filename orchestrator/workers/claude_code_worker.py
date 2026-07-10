@@ -37,6 +37,9 @@ _WORKER_ENV_ALLOWLIST = {
     "AI_ORCHESTRATOR_NO_MERGE", "AI_ORCHESTRATOR_CAPABILITY_TIER",
     "AI_ORCHESTRATOR_CONTEXT_POLICY", "AI_ORCHESTRATOR_CONTEXT_BUDGET",
     "AI_ORCHESTRATOR_PROMPT_BUDGET",
+    # Network routing is opt-in per provider profile. Do not inherit proxies
+    # from the parent process, which may expose unrelated credentials/routes.
+    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
 }
 
 # Explicitly blocked from subprocess env
@@ -52,7 +55,8 @@ def _build_minimal_worker_env(profile_env: dict) -> dict:
     """Build minimal worker subprocess env.
 
     Only allowlisted base vars + allowlisted profile vars are passed.
-    Explicitly blocks proxy vars unless profile declares them.
+    Proxy variables are passed only when the selected provider profile declares
+    them. Parent-process proxy settings remain blocked.
     """
     env = {}
 

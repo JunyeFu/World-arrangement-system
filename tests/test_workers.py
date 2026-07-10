@@ -35,6 +35,21 @@ def test_minimal_worker_env_blocks_sensitive_parent_vars(monkeypatch):
     assert "HTTPS_PROXY" not in env
 
 
+def test_minimal_worker_env_allows_profile_scoped_proxy(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://parent-proxy.example")
+
+    env = _build_minimal_worker_env(
+        {
+            "ANTHROPIC_AUTH_TOKEN": "profile-token",
+            "HTTPS_PROXY": "http://127.0.0.1:7897",
+            "NO_PROXY": "localhost,127.0.0.1",
+        }
+    )
+
+    assert env["HTTPS_PROXY"] == "http://127.0.0.1:7897"
+    assert env["NO_PROXY"] == "localhost,127.0.0.1"
+
+
 def test_claude_code_worker_forbids_glm():
     """Hotpatch: ClaudeCodeWorker must reject GLM models."""
     worker = ClaudeCodeWorker()
