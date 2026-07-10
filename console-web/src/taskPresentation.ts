@@ -32,6 +32,29 @@ export function resultBrief(task: Pick<TaskSummary, "result_summary" | "status_r
     || "暂无执行结果";
 }
 
+export function taskDuration(task: Pick<TaskSummary, "created_at" | "updated_at" | "is_terminal">, now = Date.now()): string {
+  const startedAt = Date.parse(task.created_at);
+  if (Number.isNaN(startedAt)) {
+    return "--";
+  }
+  const endedAt = task.is_terminal ? Date.parse(task.updated_at) : now;
+  if (Number.isNaN(endedAt) || endedAt < startedAt) {
+    return "--";
+  }
+  const seconds = Math.floor((endedAt - startedAt) / 1000);
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainderSeconds = seconds % 60;
+  if (minutes < 60) {
+    return remainderSeconds ? `${minutes}m ${remainderSeconds}s` : `${minutes}m`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const remainderMinutes = minutes % 60;
+  return remainderMinutes ? `${hours}h ${remainderMinutes}m` : `${hours}h`;
+}
+
 function normalize(value: string): string {
   return value.replace(/\r\n?/g, "\n").replace(/[\t ]+/g, " ").trim();
 }

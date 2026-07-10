@@ -1,5 +1,5 @@
 import { TaskSummary } from "../api/client";
-import { formatTaskLabel, resultBrief, taskBrief } from "../taskPresentation";
+import { formatTaskLabel, resultBrief, taskBrief, taskDuration } from "../taskPresentation";
 
 export function LiveTaskTable({ tasks, onSelect }: { tasks: TaskSummary[]; onSelect: (taskId: string) => void }) {
   return (
@@ -10,7 +10,7 @@ export function LiveTaskTable({ tasks, onSelect }: { tasks: TaskSummary[]; onSel
             <th>Status</th>
             <th>Task</th>
             <th>Route</th>
-            <th>Updated</th>
+            <th>Duration</th>
           </tr>
         </thead>
         <tbody>
@@ -28,7 +28,7 @@ export function LiveTaskTable({ tasks, onSelect }: { tasks: TaskSummary[]; onSel
                   <small className="result-brief">结果简报：{resultBrief(task)}</small>
                 </td>
               <td>{[task.route.worker, task.route.model, task.route.variant].filter(Boolean).join(" / ")}</td>
-              <td>{task.updated_at}</td>
+              <td>{taskDuration(task)}</td>
             </tr>
           ))}
         </tbody>

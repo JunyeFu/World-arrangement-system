@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatTaskLabel, resultBrief, taskBrief } from "./taskPresentation";
+import { formatTaskLabel, resultBrief, taskBrief, taskDuration } from "./taskPresentation";
 
 describe("task presentation", () => {
   it("formats World task identifiers as a readable local label", () => {
@@ -23,5 +23,18 @@ describe("task presentation", () => {
   it("uses the result summary before a status fallback", () => {
     expect(resultBrief({ result_summary: "已完成接口验证并通过测试", status: "DONE" })).toBe("已完成接口验证并通过测试");
     expect(resultBrief({ status_reason: "worker timed out", status: "FAILED" })).toBe("worker timed out");
+  });
+
+  it("shows terminal and active task durations", () => {
+    expect(taskDuration({
+      created_at: "2026-07-10T10:00:00Z",
+      updated_at: "2026-07-10T10:01:32Z",
+      is_terminal: true,
+    })).toBe("1m 32s");
+    expect(taskDuration({
+      created_at: "2026-07-10T10:00:00Z",
+      updated_at: "2026-07-10T10:00:10Z",
+      is_terminal: false,
+    }, Date.parse("2026-07-10T11:15:00Z"))).toBe("1h 15m");
   });
 });

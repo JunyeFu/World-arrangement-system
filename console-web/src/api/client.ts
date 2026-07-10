@@ -50,6 +50,7 @@ export type TaskSummary = {
   status_reason?: string;
   is_terminal?: boolean;
   requires_user_action?: boolean;
+  created_at: string;
   updated_at: string;
   route: { worker?: string; model?: string; variant?: string };
   runtime?: { live: boolean; stale: boolean };
