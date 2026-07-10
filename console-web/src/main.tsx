@@ -4,7 +4,7 @@ import { Activity, BarChart3, ClipboardList, LayoutDashboard } from "lucide-reac
 import { useConsoleSnapshot } from "./state/useConsole";
 import { Overview } from "./pages/Overview";
 import { TaskDetail } from "./pages/TaskDetail";
-import { Data } from "./pages/Data";
+import { Metrics } from "./pages/Metrics";
 import { Audit } from "./pages/Audit";
 import "./styles.css";
 
@@ -32,7 +32,7 @@ function App() {
         {error && <div className="banner">{error}</div>}
         {!snapshot && <div className="panel">Loading console...</div>}
         {snapshot && page === "overview" && <Overview snapshot={snapshot} onSelectTask={selectTask} onRefresh={refresh} />}
-        {snapshot && page === "data" && <Data snapshot={snapshot} />}
+        {snapshot && page === "data" && <Metrics snapshot={snapshot} />}
         {page === "audit" && <Audit />}
         {page === "task" && taskId && <TaskDetail taskId={taskId} />}
       </section>
