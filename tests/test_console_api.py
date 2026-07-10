@@ -128,6 +128,33 @@ def test_console_task_detail_uses_discovered_opencode_model_display(tmp_path: Pa
     assert route["opencode_runtime"]["side"] == "windows"
 
 
+def test_console_task_detail_resolves_opencode_model_key_before_display(tmp_path: Path, monkeypatch):
+    service = StubService(tmp_path)
+    task_id = _create_task(service)
+    service.artifacts.write_json(task_id, "route.json", {
+        "selected_worker": "opencode",
+        "selected_model": "opencode_windows_coding_plan",
+    })
+    home = tmp_path / "runtime"
+    home.mkdir()
+    (home / "models.yaml").write_text(
+        "models:\n  opencode_windows_coding_plan:\n"
+        "    model: agent-plan/glm-5-2-260617\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AI_ORCHESTRATOR_HOME", str(home))
+
+    def runner(command: str):
+        model = "agent-plan/glm-5-2-260617" if command == "opencode.cmd" else "opencode-go/glm-5.2"
+        return 0, f'{model}\n{{"name":"GLM 5.2","status":"active"}}', ""
+
+    import orchestrator.opencode_models as opencode_models
+    monkeypatch.setattr(opencode_models, "command_available", lambda command: (True, command))
+    detail = ConsoleQueries(service.db, service.artifacts, OpenCodeModelDiscovery(runner=runner)).task_detail(task_id)
+
+    assert detail["route_decision"]["agent_llm"] == "OpenCode Windows + GLM 5.2"
+
+
 def test_console_snapshot_does_not_count_stale_executing_without_heartbeat(tmp_path: Path):
     service = StubService(tmp_path)
     task_id = _create_task(service, status="EXECUTING")

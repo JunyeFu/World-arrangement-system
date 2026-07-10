@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from orchestrator.artifacts import ArtifactStore
+from orchestrator.env_profiles import model_spec
 from orchestrator.dashboard_status import (
     ACTIVE_STATUSES,
     compute_top_status_counts,
@@ -52,11 +53,12 @@ def _display_route_with_opencode(route: Any, catalog: dict[str, Any]) -> Any:
     model = str(route.get("selected_model") or route.get("model") or "")
     if worker != "opencode" or not model:
         return displayed
+    cli_model = str(model_spec(model).get("model") or model)
     for endpoint in catalog.get("endpoints", []):
         if not isinstance(endpoint, dict):
             continue
         for candidate in endpoint.get("models", []):
-            if not isinstance(candidate, dict) or candidate.get("id") != model:
+            if not isinstance(candidate, dict) or candidate.get("id") != cli_model:
                 continue
             label = str(endpoint.get("label") or "OpenCode")
             name = str(candidate.get("name") or model)
