@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api, ConsoleSnapshot } from "../api/client";
 import { HealthMetricKey, HealthStrip } from "../components/HealthStrip";
@@ -17,6 +17,7 @@ export function Overview({
 }) {
   const [selectedMetric, setSelectedMetric] = useState<HealthMetricKey>("running");
   const [busyTaskId, setBusyTaskId] = useState<string | null>(null);
+  const [recentTasksExpanded, setRecentTasksExpanded] = useState(true);
   const selectedTasks = useMemo(
     () => filterTasks(snapshot.tasks, selectedMetric),
     [snapshot, selectedMetric]
@@ -61,8 +62,19 @@ export function Overview({
         </section>
       )}
       <section className="panel">
-        <h2>Recent Tasks</h2>
-        <LiveTaskTable tasks={snapshot.tasks} onSelect={onSelectTask} />
+        <button
+          className="panel-toggle"
+          type="button"
+          aria-expanded={recentTasksExpanded}
+          onClick={() => setRecentTasksExpanded((current) => !current)}
+        >
+          <span className="panel-toggle-title">
+            {recentTasksExpanded ? <ChevronDown size={17} aria-hidden="true" /> : <ChevronRight size={17} aria-hidden="true" />}
+            <span>Recent Tasks</span>
+          </span>
+          <small>{snapshot.tasks.length} tasks</small>
+        </button>
+        {recentTasksExpanded && <LiveTaskTable tasks={snapshot.tasks} onSelect={onSelectTask} />}
       </section>
     </>
   );

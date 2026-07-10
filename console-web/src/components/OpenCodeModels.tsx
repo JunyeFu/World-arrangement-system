@@ -1,14 +1,25 @@
-import { Cpu } from "lucide-react";
+import { ChevronDown, ChevronRight, Cpu } from "lucide-react";
+import { useState } from "react";
 import { OpenCodeCatalog } from "../api/client";
 
 export function OpenCodeModels({ catalog }: { catalog: OpenCodeCatalog }) {
+  const [expanded, setExpanded] = useState(true);
+
   return (
     <section className="panel opencode-models">
-      <div className="panel-head">
-        <h2>OpenCode Runtime</h2>
+      <button
+        className="panel-toggle"
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((current) => !current)}
+      >
+        <span className="panel-toggle-title">
+          {expanded ? <ChevronDown size={17} aria-hidden="true" /> : <ChevronRight size={17} aria-hidden="true" />}
+          <span>OpenCode Runtime</span>
+        </span>
         <small>Refreshes at most every {catalog.cache_seconds}s</small>
-      </div>
-      <div className="opencode-endpoints">
+      </button>
+      {expanded && <div className="opencode-endpoints">
         {catalog.endpoints.map((endpoint) => (
           <div className="opencode-endpoint" key={endpoint.side}>
             <div className="opencode-endpoint-head">
@@ -33,7 +44,7 @@ export function OpenCodeModels({ catalog }: { catalog: OpenCodeCatalog }) {
             ) : <small>{endpoint.detail || "OpenCode model catalog is unavailable"}</small>}
           </div>
         ))}
-      </div>
+      </div>}
     </section>
   );
 }

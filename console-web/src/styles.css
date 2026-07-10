@@ -192,6 +192,43 @@ aside button:hover {
   gap: 12px;
 }
 
+.panel-toggle {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  padding: 4px 0 10px;
+  text-align: left;
+}
+
+.panel-toggle:hover {
+  background: #f7fafc;
+}
+
+.panel-toggle:focus-visible {
+  outline: 2px solid #2d6cdf;
+  outline-offset: 2px;
+}
+
+.panel-toggle-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #1d2433;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel-toggle small {
+  margin: 0;
+  white-space: nowrap;
+}
+
 h2 {
   margin: 0 0 12px;
   font-size: 16px;
