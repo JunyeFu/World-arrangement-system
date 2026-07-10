@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 import os
 import shlex
+import socket
 from pathlib import Path
 
 from .base import Worker, WorkerResult
 from .git_diff import detect_changed_files, export_patch, validate_file_ownership
 from .claude_code_worker import _build_minimal_worker_env
-from ..command_utils import build_command, command_available, subprocess_cwd, subprocess_env
+from ..command_utils import build_command, command_available, command_runs_in_wsl, subprocess_cwd, subprocess_env
 from ..constants import DEFAULT_OPENCODE_CMD
 from ..env_profiles import model_spec
 from ..llm_capability import capability_profile
@@ -19,6 +20,15 @@ from ..process_control import run_managed_process
 # opencode CLI only accepts these --variant values.
 # Spec "default" maps to "omit the flag" (save quota / conservative).
 _VALID_CLI_VARIANTS = {"high", "max", "minimal"}
+_WSL_PROXY_PORT = 7897
+_PROMPT_ATTACHMENT_INSTRUCTION = "Read the attached worker instructions and follow them exactly."
+_WSL_INNER_ENV_EXCLUSIONS = {
+    "PATH", "HOME", "USER", "SHELL", "LANG", "LC_ALL", "TERM", "TMPDIR",
+    "SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP",
+    "USERPROFILE", "LOCALAPPDATA", "APPDATA", "PROGRAMDATA",
+    "AI_ORCHESTRATOR_SANITIZED_ENV", "CLAUDE_CODE_SKIP_PROMPT_HISTORY",
+}
+_OPENCODE_PROVIDER_ENV_PREFIXES = ("ANTHROPIC_", "CLAUDE_")
 
 
 def _normalize_variant(value: str | None) -> tuple[str | None, str | None]:
@@ -65,6 +75,42 @@ def _path_for_cli(path: Path, command_value: str) -> str:
         rest = path.relative_to(path.anchor).as_posix()
         return f"/mnt/{drive}/{rest}"
     return text.replace("\\", "/")
+
+
+def _wsl_proxy_env(command_value: str) -> dict[str, str]:
+    """Return a proxy only for WSL OpenCode when a local proxy is reachable."""
+    if not command_runs_in_wsl(command_value):
+        return {}
+    proxy = os.environ.get("AI_ORCHESTRATOR_WSL_PROXY", "").strip()
+    if not proxy:
+        try:
+            with socket.create_connection(("127.0.0.1", _WSL_PROXY_PORT), timeout=0.2):
+                proxy = f"http://127.0.0.1:{_WSL_PROXY_PORT}"
+        except OSError:
+            return {}
+    return {
+        "HTTP_PROXY": proxy,
+        "HTTPS_PROXY": proxy,
+        "ALL_PROXY": proxy,
+        "NO_PROXY": "localhost,127.0.0.1",
+    }
+
+
+def _command_env(command_value: str, child_env: dict[str, str]) -> dict[str, str]:
+    """Remove Windows base variables before serializing an inner WSL command."""
+    if not command_runs_in_wsl(command_value):
+        return child_env
+    return {key: value for key, value in child_env.items() if key not in _WSL_INNER_ENV_EXCLUSIONS}
+
+
+def _opencode_child_env() -> dict[str, str]:
+    """Keep Claude-provider credentials out of an OpenCode subprocess."""
+    env = _build_minimal_worker_env(os.environ.copy())
+    return {
+        key: value
+        for key, value in env.items()
+        if not key.startswith(_OPENCODE_PROVIDER_ENV_PREFIXES)
+    }
 
 
 class OpenCodeWorker(Worker):
@@ -124,7 +170,10 @@ class OpenCodeWorker(Worker):
             _path_for_cli(worktree, opencode_cmd),
             "--title",
             task_id,
-            prompt,
+            "--file",
+            _path_for_cli(worker_dir / "prompt.md", opencode_cmd),
+            "--",
+            _PROMPT_ATTACHMENT_INSTRUCTION,
         ]
         variant_raw = route.get("variant")
         if variant_raw is None:
@@ -134,12 +183,15 @@ class OpenCodeWorker(Worker):
         cli_variant, variant_warning = _normalize_variant(variant_raw)
         if cli_variant:
             args[1:1] = ["--variant", cli_variant]
-        cmd = build_command(opencode_cmd, args, {}, cwd=worktree)
+        child_env = _opencode_child_env()
+        child_env.update(_wsl_proxy_env(opencode_cmd))
+        command_env = _command_env(opencode_cmd, child_env)
+        cmd = build_command(opencode_cmd, args, command_env, cwd=worktree)
         # Validate launcher and fixed CLI args only. The user/system prompt is a
         # data argument and may legitimately mention denied flags while asking
         # the worker to avoid them; scanning it would create false BLOCKED tasks.
-        launch_check_args = [*args[:-1], "<prompt>"]
-        launch_check_cmd = build_command(opencode_cmd, launch_check_args, {}, cwd=worktree)
+        launch_check_args = [*args[:-1], "<prompt instruction>"]
+        launch_check_cmd = build_command(opencode_cmd, launch_check_args, command_env, cwd=worktree)
         # A4: post-construction guard — never allow --variant with an illegal value
         # (e.g. "default") to reach the opencode CLI. Bypasses of _normalize_variant
         # trip this and fail the worker fast with a clear error.
@@ -163,7 +215,6 @@ class OpenCodeWorker(Worker):
                 rollback_notes=None,
             )
         timeout_sec = int(route.get("timeout_sec", 2700))
-        child_env = _build_minimal_worker_env(os.environ.copy())
         proc = run_managed_process(
             cmd,
             cwd=subprocess_cwd(opencode_cmd, worktree),

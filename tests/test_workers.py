@@ -5,7 +5,7 @@ from pathlib import Path
 from orchestrator.process_control import ManagedProcessResult
 from orchestrator.workers.claude_code_worker import ClaudeCodeWorker, _build_minimal_worker_env
 from orchestrator.workers.git_diff import detect_changed_files, export_patch
-from orchestrator.workers.opencode_worker import OpenCodeWorker
+from orchestrator.workers.opencode_worker import OpenCodeWorker, _opencode_child_env
 
 
 def _dummy_route(model: str = "deepseek_pro", worker: str = "claude_code") -> dict:
@@ -386,9 +386,69 @@ def test_opencode_worker_does_not_inject_provider_env(monkeypatch, tmp_path):
     result = worker.run("prompt", tmp_path, {"selected_model": "opencode-go/glm-5.2"}, task)
 
     assert result.status == "success"
-    assert observed["env_overrides"] == {}
+    assert "ANTHROPIC_API_KEY" not in observed["env_overrides"]
     assert "-m" in observed["args"]
     assert "api_route=opencode_cli_direct" in result.risks
+
+
+def test_opencode_child_env_excludes_claude_provider_variables(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "secret")
+    monkeypatch.setenv("CLAUDE_CODE_EFFORT_LEVEL", "max")
+
+    env = _opencode_child_env()
+
+    assert "ANTHROPIC_API_KEY" not in env
+    assert "CLAUDE_CODE_EFFORT_LEVEL" not in env
+
+
+def test_opencode_worker_attaches_prompt_file_instead_of_passing_large_prompt(monkeypatch, tmp_path):
+    observed = {}
+
+    def _build_command(value, args, env_overrides=None, cwd=None):
+        observed["args"] = list(args)
+        return ["opencode", *args]
+
+    def _success(*args, **kwargs):
+        return ManagedProcessResult(
+            returncode=0,
+            stdout_path=str(tmp_path / "worker" / "worker.stdout.jsonl"),
+            stderr_path=str(tmp_path / "worker" / "stderr.log"),
+            status="succeeded",
+        )
+
+    prompt = "x" * 12_000
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.command_available", lambda cmd: (True, cmd))
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.build_command", _build_command)
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.run_managed_process", _success)
+
+    worker = OpenCodeWorker()
+    task = {"run_dir": str(tmp_path), "task_id": "t_long_prompt", "test_commands": [], "build_commands": []}
+    result = worker.run(prompt, tmp_path, {"selected_model": "opencode-go/glm-5.2"}, task)
+
+    assert result.status == "success"
+    assert "--file" in observed["args"]
+    assert "--" in observed["args"]
+    assert prompt not in observed["args"]
+    assert (tmp_path / "worker" / "prompt.md").read_text(encoding="utf-8") == prompt
+
+
+def test_opencode_worker_uses_configured_proxy_only_for_wsl(monkeypatch):
+    from orchestrator.workers.opencode_worker import _command_env, _wsl_proxy_env
+
+    monkeypatch.setenv("AI_ORCHESTRATOR_WSL_PROXY", "http://127.0.0.1:7897")
+
+    assert _wsl_proxy_env("opencode.cmd") == {}
+    assert _wsl_proxy_env("wsl -e opencode") == {
+        "HTTP_PROXY": "http://127.0.0.1:7897",
+        "HTTPS_PROXY": "http://127.0.0.1:7897",
+        "ALL_PROXY": "http://127.0.0.1:7897",
+        "NO_PROXY": "localhost,127.0.0.1",
+    }
+    assert _command_env("wsl -e opencode", {
+        "HOME": r"C:\\Users\\fujunye",
+        "PATH": r"C:\\Windows",
+        "HTTPS_PROXY": "http://127.0.0.1:7897",
+    }) == {"HTTPS_PROXY": "http://127.0.0.1:7897"}
 
 
 def test_opencode_windows_model_uses_direct_windows_command(monkeypatch, tmp_path):
