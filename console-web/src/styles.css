@@ -239,6 +239,53 @@ small {
   color: #4c647b;
 }
 
+.route-cell {
+  min-width: 150px;
+}
+
+.route-identity {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.route-identity + .route-identity {
+  margin-top: 3px;
+}
+
+.route-variant {
+  margin-left: 20px;
+}
+
+.agent-anthropic {
+  color: #9a4f30;
+}
+
+.agent-opencode,
+.model-deepseek {
+  color: #1765b0;
+}
+
+.agent-openai,
+.model-openai {
+  color: #147a55;
+}
+
+.model-zhipu {
+  color: #744bb3;
+}
+
+.model-mimo {
+  color: #a05a16;
+}
+
+.agent-generic,
+.model-generic {
+  color: #536579;
+}
+
 .status {
   display: inline-block;
   padding: 3px 7px;
