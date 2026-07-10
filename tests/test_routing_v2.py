@@ -13,7 +13,7 @@ def test_readme_architecture_description_routes_to_docs():
     )
 
     assert route.selected_worker == "claude_code"
-    assert route.selected_model == "deepseek_pro"
+    assert route.selected_model == "deepseek_flash"
     assert route.task_labels["artifact_type"] == "docs"
     assert "docs" in route.task_labels["risk_domain"]
     assert "opencode" in {c["worker"] for c in route.rejected_candidates}
@@ -156,7 +156,7 @@ def test_route_contains_explanation_fields():
     assert data["confidence"] > 0
     assert data["selected_agent"] == data["selected_worker"]
     assert data["selected_llm"] == data["selected_model"]
-    assert data["agent_llm"] == "claude code + deepseek V4 pro"
+    assert data["agent_llm"] == "claude code + deepseek V4 flash"
     assert data["capability_tier"] == "max"
     assert data["capability_profile"]["context_policy"] == "top"
     assert data["capability_profile"]["context_budget"] == "max_available"
@@ -176,7 +176,7 @@ def test_route_agent_llm_names_cover_allowed_combinations():
         (
             {"user_goal": "Analyze project state only", "risk_level": "low"},
             {},
-            "claude code + deepseek V4 pro",
+                "claude code + deepseek V4 flash",
         ),
         (
             {"user_goal": "Analyze UI screenshot layout issues", "risk_level": "medium"},

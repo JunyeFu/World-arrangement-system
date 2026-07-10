@@ -144,4 +144,4 @@ def test_agents_md_injected_for_claude_to_opencode_escalation(tmp_path, monkeypa
     with (Path(res["run_dir"]) / "route.json").open("r", encoding="utf-8") as f:
         route = json.load(f)
     assert route["selected_worker"] == "claude_code"
-    assert route.get("escalation_policy") == "opencode_on_failure"
+    assert route.get("escalation_policy") == "codex_review_or_needs_user_after_glm"

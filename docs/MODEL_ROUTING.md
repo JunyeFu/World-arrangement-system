@@ -68,17 +68,26 @@ Provider-specific maximum settings are preserved instead of assuming a shared AP
 
 ## Default Routes
 
+World uses a deterministic local classifier and recorded route metrics. It does not ask Codex to analyze ordinary routing decisions. The selected route must be the lowest-cost combination that satisfies the task boundary; Coding Plan usage is reserved for work where GLM's broader coding capacity is justified.
+
 | Task | Agent + LLM | Internal route | Intensity / Variant |
 |---|---|---|---|
-| README, docs, comments | claude code + deepseek V4 pro / flash | `claude_code` + `deepseek_pro` or `deepseek_flash` | low / medium |
-| Simple bugfix | claude code + deepseek V4 pro | `claude_code` + `deepseek_pro` | medium |
-| Tests and low-risk code changes | claude code + deepseek V4 pro | `claude_code` + `deepseek_pro` | medium |
+| README, docs, comments, read-only checks | claude code + deepseek V4 flash | `claude_code` + `deepseek_flash` | low |
+| Single-file / bounded bugfix | claude code + deepseek V4 flash, then pro | `claude_code` + `deepseek_flash` | low |
+| Tests and ordinary code changes | claude code + deepseek V4 pro | `claude_code` + `deepseek_pro` | medium |
 | High-risk code touching auth, payment, database, production, or deployment | claude code + deepseek V4 pro first, approval-aware escalation | `claude_code` + `deepseek_pro` | high |
 | Screenshot / image / PDF / design analysis | claude code + Mimo V2.5 | `claude_code` + `mimo_v25` | medium |
 | Screenshot-to-code task | claude code + Mimo V2.5 pro | `claude_code` + `mimo_v25_pro` | high |
 | Explicit GLM-5.2 request | opencode + GLM 5.2 | `opencode` + `opencode-go/glm-5.2` | high |
 | `complex_coding` / large refactor | opencode + GLM 5.2 or escalation chain | `opencode` + `opencode-go/glm-5.2` | high |
 | `hard_bugfix` | opencode + GLM 5.2 | `opencode` + `opencode-go/glm-5.2` | max |
+
+## Escalation Boundary
+
+- Flash may escalate to Pro for the same bounded task.
+- Pro may escalate to GLM only for open bug hunts, multi-file patches, config repair, test generation, or other complex task shapes.
+- GLM high may escalate to GLM max. If GLM max cannot complete the task, World stops autonomous worker escalation and sends the evidence to Codex review or requests user direction. Codex is never selected for routine classification.
+- A project-level OpenCode default cannot force simple/docs work onto Coding Plan; explicit GLM requests and complex task shapes still do.
 
 ## Conflict Rules
 

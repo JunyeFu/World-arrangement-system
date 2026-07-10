@@ -48,7 +48,11 @@ def apply_router_v3(
     route["retry_chain"] = retry_chain
     route["fallback_models"] = fallback_models(retry_chain)
     route["max_retries"] = max(0, len(retry_chain) - 1)
-    route["escalation_policy"] = "opencode_on_failure" if any(s["worker"] == "opencode" for s in retry_chain[1:]) else route.get("escalation_policy", "codex_review_or_needs_user")
+    route["escalation_policy"] = (
+        "codex_review_or_needs_user_after_glm"
+        if any(s["worker"] == "opencode" for s in retry_chain)
+        else route.get("escalation_policy", "codex_review_or_needs_user")
+    )
 
     estimate = estimate_route_cost(retry_chain)
     route["task_shape"] = task_shape

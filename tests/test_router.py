@@ -3,7 +3,7 @@ from orchestrator.router import plan_route
 
 def test_docs_route_low_cost():
     route = plan_route({"user_goal": "更新 README 文档", "risk_level": "low"}, {})
-    assert route.selected_model == "deepseek_pro"
+    assert route.selected_model == "deepseek_flash"
     assert route.selected_worker == "claude_code"
 
 
@@ -63,13 +63,13 @@ def test_router_opencode_via_project_config():
 # ── Hotpatch-required tests ──
 
 def test_default_docs_routes_to_claude_deepseek():
-    """Hotpatch: default docs task → ClaudeCodeWorker + deepseek_pro."""
+    """Default docs task uses the lowest sufficient Flash route."""
     route = plan_route(
         {"user_goal": "更新 README 文档", "risk_level": "low"},
         {},
     )
     assert route.selected_worker == "claude_code"
-    assert route.selected_model == "deepseek_pro"
+    assert route.selected_model == "deepseek_flash"
 
 
 def test_simple_bug_routes_to_claude_deepseek():

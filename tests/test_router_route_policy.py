@@ -6,7 +6,7 @@ from orchestrator.router_route_policy import (
 )
 
 
-def test_default_opencode_project_uses_project_variant_for_routine_tasks():
+def test_default_opencode_project_does_not_override_routine_task_economics():
     selected = select_for_shape(
         "targeted_patch",
         {"selected_worker": "claude_code", "selected_model": "deepseek_pro"},
@@ -16,9 +16,8 @@ def test_default_opencode_project_uses_project_variant_for_routine_tasks():
         None,
     )
 
-    assert selected["selected_worker"] == "opencode"
-    assert selected["variant"] == "high"
-    assert selected["intensity"] == "high"
+    assert selected["selected_worker"] == "claude_code"
+    assert selected["selected_model"] == "deepseek_pro"
 
 
 def test_goal_with_glm_forces_opencode_high_route():
@@ -49,6 +48,19 @@ def test_docs_update_uses_flash_when_route_already_selected_flash():
     assert selected["selected_worker"] == "claude_code"
     assert selected["selected_model"] == "deepseek_flash"
     assert selected["intensity"] == "low"
+
+
+def test_docs_update_defaults_to_flash_without_a_route_override():
+    selected = select_for_shape(
+        "docs_update",
+        {"selected_worker": "claude_code", "selected_model": "deepseek_pro"},
+        {"user_goal": "Update README"},
+        {},
+        {},
+        None,
+    )
+
+    assert selected["selected_model"] == "deepseek_flash"
 
 
 def test_single_file_target_can_use_flash_with_reliable_history_and_budget():

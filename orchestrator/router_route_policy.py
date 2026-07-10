@@ -22,13 +22,10 @@ def select_for_shape(
     task_type = str(task.get("task_type", "")).lower()
     if task_type == "hard_bugfix":
         return opencode_route("max")
-    if route.get("selected_worker") == "opencode" or project.get("default_worker") == "opencode":
-        if project.get("default_worker") == "opencode" and task_type not in {"complex_coding"} and "glm" not in goal:
+    if route.get("selected_worker") == "opencode":
+        variant = normalize_variant(route.get("variant"))
+        if not variant and route.get("selected_model") == "opencode-go/glm-5.2":
             variant = normalize_variant(project.get("default_variant"))
-        else:
-            variant = normalize_variant(route.get("variant"))
-            if not variant and route.get("selected_model") == "opencode-go/glm-5.2":
-                variant = normalize_variant(project.get("default_variant"))
         return opencode_route(variant) if variant else opencode_route_without_variant()
     if "glm" in explicit_model or "glm" in goal:
         return opencode_route("high")
@@ -37,7 +34,7 @@ def select_for_shape(
         model = choose_claude_model(
             history,
             ["deepseek_flash", "deepseek_pro"],
-            default="deepseek_flash" if route.get("selected_model") == "deepseek_flash" else "deepseek_pro",
+            default="deepseek_flash",
             budget_cap=budget_cap,
             allow_low_cost=True,
         )
@@ -67,7 +64,7 @@ def select_for_shape(
     if task_shape == "config_repair":
         return claude_route("deepseek_pro", "medium")
     if task_shape == "review_only":
-        return claude_route("deepseek_pro", "medium")
+        return claude_route("deepseek_flash", "low")
     return None
 
 

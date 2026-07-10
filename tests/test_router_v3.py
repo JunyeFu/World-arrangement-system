@@ -209,7 +209,7 @@ def test_read_only_protocol_overrides_patch_keywords_and_fallbacks():
 
     assert data["task_shape"] == "review_only"
     assert data["selected_worker"] == "claude_code"
-    assert data["selected_model"] == "deepseek_pro"
+    assert data["selected_model"] == "deepseek_flash"
     assert len(data["retry_chain"]) == 1
     assert data["fallback_models"] == []
 
