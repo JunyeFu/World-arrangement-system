@@ -8,7 +8,7 @@ const GROUP_TITLES: Record<HealthMetricKey, string> = {
   failed: "Failed Codex Processes",
   approval: "Approval Waiting",
   alerts: "Open Alerts",
-  cost: "Cost Related Processes"
+  done: "Completed Tasks"
 };
 
 export function ProcessCards({

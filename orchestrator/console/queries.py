@@ -110,6 +110,7 @@ class ConsoleQueries:
                 "failed": counts["failed"],
                 "approval_waiting": counts["approval_waiting"],
                 "open_alerts": counts["alerts"],
+                "done": counts["done"],
                 "cost_today_usd": metrics["total_cost_usd"],
             },
             "tasks": tasks,
@@ -125,8 +126,6 @@ class ConsoleQueries:
         tasks = snapshot["tasks"]
         if project_id:
             tasks = [task for task in tasks if task.get("project_id") == project_id]
-        if not include_completed:
-            tasks = [task for task in tasks if task.get("console_group") != "none"]
         counts = compute_top_status_counts(tasks, system_alert_count=len(snapshot["alerts"]))
         return {
             "counts": {
@@ -135,6 +134,7 @@ class ConsoleQueries:
                 "Failed": counts["failed"],
                 "Approval": counts["approval_waiting"],
                 "Alerts": counts["alerts"],
+                "Done": counts["done"],
             },
             "updated_at": _now(),
         }

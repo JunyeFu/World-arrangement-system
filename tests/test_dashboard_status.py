@@ -166,7 +166,7 @@ def test_unknown_status_maps_to_alerts():
     assert status.big_status == "Alerts"
 
 
-def test_compute_top_status_counts_hides_done_and_closed():
+def test_compute_top_status_counts_includes_done_and_hides_closed():
     tasks = [
         derive_dashboard_status({"status": "EXECUTING"}, heartbeat_fresh=True).to_dict(),
         derive_dashboard_status({"status": "NEW"}).to_dict(),
@@ -183,4 +183,5 @@ def test_compute_top_status_counts_hides_done_and_closed():
         "failed": 1,
         "approval_waiting": 1,
         "alerts": 1,
+        "done": 1,
     }

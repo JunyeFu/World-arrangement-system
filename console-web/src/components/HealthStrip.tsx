@@ -1,7 +1,7 @@
-import { Activity, AlertTriangle, CircleDollarSign, Clock, ListChecks, ShieldAlert } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Clock, ListChecks, ShieldAlert } from "lucide-react";
 import { ConsoleSnapshot } from "../api/client";
 
-export type HealthMetricKey = "running" | "queued" | "failed" | "approval" | "alerts" | "cost";
+export type HealthMetricKey = "running" | "queued" | "failed" | "approval" | "alerts" | "done";
 
 export function HealthStrip({
   snapshot,
@@ -18,7 +18,7 @@ export function HealthStrip({
     { key: "failed" as const, label: "Failed", value: snapshot.health.failed, icon: ShieldAlert },
     { key: "approval" as const, label: "Approval", value: snapshot.health.approval_waiting, icon: ListChecks },
     { key: "alerts" as const, label: "Alerts", value: snapshot.health.open_alerts, icon: AlertTriangle },
-    { key: "cost" as const, label: "Cost", value: `$${snapshot.health.cost_today_usd.toFixed(4)}`, icon: CircleDollarSign }
+    { key: "done" as const, label: "Done", value: snapshot.health.done, icon: CheckCircle2 }
   ];
 
   return (

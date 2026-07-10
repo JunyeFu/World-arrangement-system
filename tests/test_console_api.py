@@ -326,6 +326,7 @@ def test_console_snapshot_assigns_status_groups(tmp_path: Path):
     assert payload["health"]["approval_waiting"] == 2
     assert payload["health"]["failed"] == 1
     assert payload["health"]["open_alerts"] == 1
+    assert payload["health"]["done"] == 1
     groups = {task["task_id"]: task["console_group"] for task in payload["tasks"]}
     assert groups["task_queued"] == "queued"
     assert groups["task_approval"] == "approval"
@@ -340,6 +341,7 @@ def test_dashboard_summary_uses_derived_big_status_counts(tmp_path: Path):
     _create_task(service, status="EXECUTING", task_id="task_stale")
     _create_task(service, status="NEEDS_USER", task_id="task_approval")
     _create_task(service, status="FAILED_FINAL", task_id="task_failed")
+    _create_task(service, status="COMPLETED_NO_CHANGES", task_id="task_done")
     api = ConsoleAPI(service)  # type: ignore[arg-type]
 
     status, _, payload = api.handle_get("/api/dashboard/summary")
@@ -351,6 +353,7 @@ def test_dashboard_summary_uses_derived_big_status_counts(tmp_path: Path):
         "Failed": 1,
         "Approval": 1,
         "Alerts": 1,
+        "Done": 1,
     }
     assert "updated_at" in payload
 

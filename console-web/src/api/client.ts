@@ -6,6 +6,7 @@ export type ConsoleSnapshot = {
     failed: number;
     approval_waiting: number;
     open_alerts: number;
+    done: number;
     cost_today_usd: number;
   };
   tasks: TaskSummary[];

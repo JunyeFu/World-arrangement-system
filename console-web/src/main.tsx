@@ -1,14 +1,14 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, BarChart3, ClipboardList, LayoutDashboard } from "lucide-react";
+import { Activity, CheckCircle2, ClipboardList, LayoutDashboard } from "lucide-react";
 import { useConsoleSnapshot } from "./state/useConsole";
 import { Overview } from "./pages/Overview";
 import { TaskDetail } from "./pages/TaskDetail";
-import { Metrics } from "./pages/Metrics";
+import { Done } from "./pages/Done";
 import { Audit } from "./pages/Audit";
 import "./styles.css";
 
-type Page = "overview" | "task" | "metrics" | "audit";
+type Page = "overview" | "task" | "done" | "audit";
 
 function App() {
   const { snapshot, error, refresh } = useConsoleSnapshot();
@@ -25,14 +25,14 @@ function App() {
       <aside>
         <div className="brand"><Activity size={22} /> World</div>
         <button aria-label="Overview" className={page === "overview" ? "active" : ""} onClick={() => setPage("overview")}><LayoutDashboard size={17} /> <span className="nav-label">Overview</span></button>
-        <button aria-label="Metrics" className={page === "metrics" ? "active" : ""} onClick={() => setPage("metrics")}><BarChart3 size={17} /> <span className="nav-label">Metrics</span></button>
+        <button aria-label="Done" className={page === "done" ? "active" : ""} onClick={() => setPage("done")}><CheckCircle2 size={17} /> <span className="nav-label">Done</span></button>
         <button aria-label="Audit" className={page === "audit" ? "active" : ""} onClick={() => setPage("audit")}><ClipboardList size={17} /> <span className="nav-label">Audit</span></button>
       </aside>
       <section className="workspace">
         {error && <div className="banner">{error}</div>}
         {!snapshot && <div className="panel">Loading console...</div>}
         {snapshot && page === "overview" && <Overview snapshot={snapshot} onSelectTask={selectTask} onRefresh={refresh} />}
-        {snapshot && page === "metrics" && <Metrics snapshot={snapshot} />}
+        {snapshot && page === "done" && <Done snapshot={snapshot} onSelectTask={selectTask} />}
         {page === "audit" && <Audit />}
         {page === "task" && taskId && <TaskDetail taskId={taskId} />}
       </section>

@@ -175,7 +175,14 @@ def derive_dashboard_status(
 
 
 def compute_top_status_counts(tasks: list[dict[str, Any]], system_alert_count: int = 0) -> dict[str, int]:
-    counts = {"running": 0, "queued": 0, "failed": 0, "approval_waiting": 0, "alerts": system_alert_count}
+    counts = {
+        "running": 0,
+        "queued": 0,
+        "failed": 0,
+        "approval_waiting": 0,
+        "alerts": system_alert_count,
+        "done": 0,
+    }
     for task in tasks:
         group = str(task.get("console_group") or "").lower()
         if group == "running":
@@ -188,6 +195,8 @@ def compute_top_status_counts(tasks: list[dict[str, Any]], system_alert_count: i
             counts["approval_waiting"] += 1
         elif group == "alerts":
             counts["alerts"] += 1
+        elif str(task.get("big_status") or "") == "Done":
+            counts["done"] += 1
     return counts
 
 

@@ -167,7 +167,7 @@ Open:
 
 Console capabilities:
 
-- Top status strip: Running, Queued, Failed, Approval, Alerts, Cost.
+- Top status strip: Running, Queued, Failed, Approval, Alerts, Done.
 - Process cards for current actionable tasks.
 - Task detail with timeline, route, verify, review, artifacts, and Markdown output preview.
 - Metrics dashboard with usage summary, model window, cost chart, call table, efficiency, and Codex budget.
@@ -180,7 +180,7 @@ The Metrics page currently includes:
 - Total cost
 - P95 duration with automatic time units
 - Efficiency
-- Cost by model
+- Completed task summary and quality outcomes
 - Model call table
 - Codex Budget
 
