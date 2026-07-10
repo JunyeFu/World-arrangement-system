@@ -102,6 +102,21 @@ def test_console_snapshot_matches_schema_and_redacts(tmp_path: Path):
     assert "fake-redacted-value" not in json.dumps(payload)
 
 
+def test_console_snapshot_includes_redacted_result_summary(tmp_path: Path):
+    service = StubService(tmp_path)
+    task_id = _create_task(service, status="DONE")
+    service.artifacts.write_json(task_id, "result.json", {
+        "status": "success",
+        "summary": "Implemented the task with sk-1234567890abcdefghijklmnop redacted.",
+    })
+
+    status, _, payload = ConsoleAPI(service).handle_get("/api/console/snapshot")  # type: ignore[arg-type]
+
+    assert status == 200
+    task = next(item for item in payload["tasks"] if item["task_id"] == task_id)
+    assert task["result_summary"] == "Implemented the task with [REDACTED] redacted."
+
+
 def test_console_task_detail_uses_discovered_opencode_model_display(tmp_path: Path):
     service = StubService(tmp_path)
     task_id = _create_task(service)

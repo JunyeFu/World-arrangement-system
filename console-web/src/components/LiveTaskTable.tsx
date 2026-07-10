@@ -1,4 +1,5 @@
 import { TaskSummary } from "../api/client";
+import { formatTaskLabel, resultBrief, taskBrief } from "../taskPresentation";
 
 export function LiveTaskTable({ tasks, onSelect }: { tasks: TaskSummary[]; onSelect: (taskId: string) => void }) {
   return (
@@ -16,15 +17,16 @@ export function LiveTaskTable({ tasks, onSelect }: { tasks: TaskSummary[]; onSel
           {tasks.map((task) => (
             <tr key={task.task_id} onClick={() => onSelect(task.task_id)}>
               <td>
-                <span className={`status ${(task.display_status || task.status).toLowerCase()}`}>
-                  {task.display_status || task.status}
-                </span>
-                {task.status_note && <small>{task.status_note}</small>}
-              </td>
-              <td>
-                <strong>{task.task_id}</strong>
-                <small>{task.user_goal}</small>
-              </td>
+                  <span className={`status ${(task.display_status || task.status).toLowerCase()}`}>
+                    {task.display_status || task.status}
+                  </span>
+                  {task.status_note && <small>{task.status_note}</small>}
+                </td>
+                <td>
+                  <strong>{formatTaskLabel(task.task_id)}</strong>
+                  <small className="task-brief">任务简报：{taskBrief(task.user_goal)}</small>
+                  <small className="result-brief">结果简报：{resultBrief(task)}</small>
+                </td>
               <td>{[task.route.worker, task.route.model, task.route.variant].filter(Boolean).join(" / ")}</td>
               <td>{task.updated_at}</td>
             </tr>

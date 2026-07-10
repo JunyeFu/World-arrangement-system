@@ -40,6 +40,7 @@ export type TaskSummary = {
   task_id: string;
   project_id: string;
   user_goal: string;
+  result_summary?: string;
   status: string;
   raw_status?: string;
   display_status?: string;

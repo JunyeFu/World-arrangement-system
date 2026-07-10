@@ -22,6 +22,7 @@ from .display_names import display_agent_name, display_model_name, display_route
 from .alerts import evaluate_alerts
 from .metrics_usage import build_metrics_usage
 from .pricing import calculate_token_cost_usd, has_price
+from .redaction import redact
 from .serializers import (
     alert_view,
     artifact_allowed,
@@ -90,7 +91,11 @@ class ConsoleQueries:
         raw_tasks = self.db.list_tasks(limit=100)
         dismissed = self.db.list_console_dismissed_task_ids()
         tasks = [
-            _with_runtime_liveness(task_summary(row), live_task_ids, row)
+            _with_runtime_liveness(
+                _with_result_summary(task_summary(row), self._read_result_summary(row)),
+                live_task_ids,
+                row,
+            )
             for row in raw_tasks
             if row.get("task_id") not in dismissed
         ]
@@ -460,6 +465,25 @@ class ConsoleQueries:
         except (OSError, json.JSONDecodeError):
             return None
         return value if isinstance(value, dict) else {"value": value}
+
+    def _read_result_summary(self, task: dict[str, Any]) -> str | None:
+        run_dir = task.get("run_dir")
+        if not run_dir:
+            return None
+        try:
+            path = (Path(str(run_dir)) / "result.json").resolve()
+            path.relative_to(self.artifacts.root)
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, json.JSONDecodeError):
+            return None
+        summary = value.get("summary") if isinstance(value, dict) else None
+        return str(summary).strip() if isinstance(summary, str) and summary.strip() else None
+
+
+def _with_result_summary(task: dict[str, Any], summary: str | None) -> dict[str, Any]:
+    if summary:
+        task["result_summary"] = redact(summary)
+    return task
 
 
 def _with_runtime_liveness(

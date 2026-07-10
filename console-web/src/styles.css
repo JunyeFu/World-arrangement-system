@@ -229,6 +229,16 @@ small {
   margin-top: 3px;
 }
 
+.task-brief,
+.result-brief {
+  max-width: 620px;
+  overflow-wrap: anywhere;
+}
+
+.result-brief {
+  color: #4c647b;
+}
+
 .status {
   display: inline-block;
   padding: 3px 7px;
