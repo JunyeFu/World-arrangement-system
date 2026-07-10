@@ -71,9 +71,11 @@ class OpenCodeWorker(Worker):
     name = "opencode"
 
     def run(self, prompt: str, worktree: Path, route: dict, task: dict, dry_run: bool = False) -> WorkerResult:
-        opencode_cmd = os.environ.get("AI_OPENCODE_CMD", DEFAULT_OPENCODE_CMD)
         selected_model = str(route.get("selected_model") or route.get("model") or "")
         spec = model_spec(selected_model)
+        # A model entry can select a host-specific CLI without changing the
+        # process-wide default used by existing WSL routes.
+        opencode_cmd = str(spec.get("worker_command") or os.environ.get("AI_OPENCODE_CMD", DEFAULT_OPENCODE_CMD))
         llm_profile = route.get("capability_profile") or capability_profile(
             selected_model,
             route.get("capability_tier"),

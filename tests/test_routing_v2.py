@@ -196,4 +196,5 @@ def test_route_agent_llm_names_cover_allowed_combinations():
     ]
     for task, project, expected in cases:
         assert plan_route(task, project).to_dict()["agent_llm"] == expected
+    assert agent_llm_name("opencode", "opencode_windows_go_glm52") == "opencode Windows + GLM 5.2"
     assert agent_llm_name("codex_review", "codex_reviewer") == "codex + GPT 5.5"

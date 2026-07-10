@@ -8,6 +8,7 @@ AGENT_LLM_COMBINATIONS: dict[tuple[str, str], str] = {
     ("claude_code", "mimo_v25_pro"): "claude code + Mimo V2.5 pro",
     ("opencode", "opencode-go/glm-5.2"): "opencode + GLM 5.2",
     ("opencode", "opencode_go_glm52"): "opencode + GLM 5.2",
+    ("opencode", "opencode_windows_go_glm52"): "opencode Windows + GLM 5.2",
     ("codex_review", "codex_reviewer"): "codex + GPT 5.5",
 }
 

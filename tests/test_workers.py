@@ -376,6 +376,41 @@ def test_opencode_worker_does_not_inject_provider_env(monkeypatch, tmp_path):
     assert "api_route=opencode_cli_direct" in result.risks
 
 
+def test_opencode_windows_model_uses_direct_windows_command(monkeypatch, tmp_path):
+    observed = {}
+
+    def _spec(model):
+        assert model == "opencode_windows_go_glm52"
+        return {"model": "opencode-go/glm-5.2", "worker_command": "opencode"}
+
+    def _success(cmd, **kwargs):
+        observed["cmd"] = cmd
+        observed["cwd"] = kwargs["cwd"]
+        stdout_path = Path(kwargs["stdout_path"])
+        stdout_path.parent.mkdir(parents=True, exist_ok=True)
+        stdout_path.write_text("", encoding="utf-8")
+        Path(kwargs["stderr_path"]).write_text("", encoding="utf-8")
+        return ManagedProcessResult(
+            returncode=0,
+            stdout_path=str(stdout_path),
+            stderr_path=str(kwargs["stderr_path"]),
+            status="succeeded",
+        )
+
+    monkeypatch.setenv("AI_OPENCODE_CMD", "wsl -e opencode")
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.model_spec", _spec)
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.command_available", lambda cmd: (True, cmd))
+    monkeypatch.setattr("orchestrator.workers.opencode_worker.run_managed_process", _success)
+
+    worker = OpenCodeWorker()
+    task = {"run_dir": str(tmp_path), "task_id": "t_windows", "test_commands": [], "build_commands": []}
+    result = worker.run("prompt", tmp_path, {"selected_model": "opencode_windows_go_glm52"}, task)
+
+    assert result.status == "success"
+    assert observed["cmd"][0] == "opencode"
+    assert observed["cwd"] == tmp_path
+
+
 def test_opencode_worker_blocks_denied_launch_command(monkeypatch, tmp_path):
     called = {"run": False}
 

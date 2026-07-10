@@ -24,6 +24,7 @@ PRICES_USD_PER_MILLION = {
     "mimo-v2.5-pro": TokenPrice(Decimal("0.435"), Decimal("0.0036"), Decimal("0.87")),
     "opencode-go/glm-5.2": TokenPrice(Decimal("1.40"), Decimal("0.26"), Decimal("4.40")),
     "opencode_go_glm52": TokenPrice(Decimal("1.40"), Decimal("0.26"), Decimal("4.40")),
+    "opencode_windows_go_glm52": TokenPrice(Decimal("1.40"), Decimal("0.26"), Decimal("4.40")),
     "glm-5.2": TokenPrice(Decimal("1.40"), Decimal("0.26"), Decimal("4.40")),
     "glm": TokenPrice(Decimal("1.40"), Decimal("0.26"), Decimal("4.40")),
 }

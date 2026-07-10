@@ -79,6 +79,18 @@ models:
     # default_variant: opencode CLI 只接受 high|max|minimal；写 "default" 等同省略 --variant（save quota）。
     default_variant: "high"
 
+  opencode_windows_go_glm52:
+    provider: opencode_go
+    adapter: opencode_cli
+    model: "opencode-go/glm-5.2"
+    agent_llm: "opencode Windows + GLM 5.2"
+    capability_tiers: ["default", "high", "max"]
+    context_policy: "top"
+    description: "opencode Windows + GLM 5.2：显式在 Windows 主机执行的 OpenCode 路线"
+    worker: "opencode"
+    worker_command: "opencode"
+    default_variant: "high"
+
   # ── Codex Review ──
 
   codex_reviewer:
