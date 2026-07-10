@@ -1,4 +1,5 @@
 from orchestrator.dashboard_status import compute_top_status_counts, derive_dashboard_status
+from orchestrator.state_machine import STATE_ALIASES, TRANSITIONS
 
 
 def test_new_maps_to_queued():
@@ -68,6 +69,34 @@ def test_cancelled_is_closed_hidden():
     assert status.console_group == "none"
 
 
+def test_done_with_block_maps_to_approval():
+    status = derive_dashboard_status({"status": "DONE_WITH_BLOCK"})
+
+    assert status.big_status == "Approval"
+    assert status.console_group == "approval"
+    assert status.requires_user_action is True
+
+
+def test_future_waiting_and_needs_statuses_map_to_approval():
+    waiting = derive_dashboard_status({"status": "MANUAL_APPROVAL_WAITING"})
+    needs = derive_dashboard_status({"status": "NEEDS_OPERATOR"})
+
+    assert waiting.big_status == "Approval"
+    assert needs.big_status == "Approval"
+
+
+def test_all_declared_lifecycle_and_legacy_states_have_a_big_status():
+    declared = set(TRANSITIONS) | set(STATE_ALIASES) | {
+        target for targets in TRANSITIONS.values() for target in targets
+    }
+    declared.add("PUBLISHING")
+
+    statuses = [derive_dashboard_status({"status": status}) for status in declared]
+
+    assert all(status.big_status for status in statuses)
+    assert all(status.display_status != "UNKNOWN_STATUS" for status in statuses)
+
+
 def test_retrying_without_scheduler_maps_to_retry_stuck_alert():
     status = derive_dashboard_status({"status": "RETRYING"})
 
@@ -110,6 +139,17 @@ def test_control_timed_out_overrides_executing_to_worker_timed_out():
 
     assert status.display_status == "WORKER_TIMED_OUT"
     assert status.big_status == "Failed"
+
+
+def test_terminal_completion_ignores_stale_failed_control_process():
+    status = derive_dashboard_status(
+        {"status": "COMPLETED_WITH_PARTIAL_ARTIFACTS"},
+        control_process={"status": "failed"},
+    )
+
+    assert status.display_status == "COMPLETED_WITH_PARTIAL_ARTIFACTS"
+    assert status.big_status == "Done"
+    assert status.console_group == "none"
 
 
 def test_missing_artifacts_maps_to_alerts():

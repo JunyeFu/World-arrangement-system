@@ -9,12 +9,14 @@ from typing import Any
 QUEUED_STATUSES = {
     "NEW",
     "QUEUED",
+    "PROJECT_DETECTED",
     "CLASSIFIED",
     "RISK_EVALUATED",
     "DYNAMIC_RISK_SCORED",
     "APPROVAL_DECIDED",
     "AUTO_SILENT",
     "AUTO_WITH_SUMMARY",
+    "READY_TO_PUBLISH",
     "PLANNED",
     "ROUTED",
     "WORKTREE_CREATED",
@@ -28,6 +30,7 @@ ACTIVE_STATUSES = {
     "CODEX_REVIEWING",
     "REVIEWING",
     "PUBLISHING",
+    "POLICY_LEARNING",
 }
 
 APPROVAL_STATUSES = {
@@ -36,6 +39,7 @@ APPROVAL_STATUSES = {
     "NEEDS_USER",
     "NEEDS_REVIEW",
     "BLOCKED",
+    "DONE_WITH_BLOCK",
 }
 
 FAILED_STATUSES = {
@@ -62,7 +66,6 @@ DONE_STATUSES = {
 CLOSED_STATUSES = {
     "CANCELLED",
     "ROLLED_BACK",
-    "DONE_WITH_BLOCK",
 }
 
 ALERT_STATUSES = {
@@ -121,8 +124,9 @@ def derive_dashboard_status(
 ) -> DashboardStatus:
     raw = str(task.get("status") or task.get("raw_status") or "UNKNOWN").upper()
     process_status = str((control_process or {}).get("status") or "").lower()
+    terminal_raw_status = raw in DONE_STATUSES or raw in CLOSED_STATUSES
 
-    if process_status in {"failed", "timed_out"}:
+    if not terminal_raw_status and process_status in {"failed", "timed_out"}:
         display = "WORKER_FAILED" if process_status == "failed" else "WORKER_TIMED_OUT"
         return _status(raw, display, "Failed", False, False, False, False, f"control process is {process_status}")
 
@@ -152,7 +156,7 @@ def derive_dashboard_status(
             return _status(raw, raw, "Running", False, False, True, False, "active task has fresh heartbeat")
         return _status(raw, f"STALE_{raw}", "Alerts", False, False, False, True, "active task has no fresh heartbeat")
 
-    if raw in APPROVAL_STATUSES:
+    if raw in APPROVAL_STATUSES or raw.endswith("_WAITING") or raw.startswith("NEEDS_"):
         return _status(raw, raw, "Approval", False, True, False, False, "task requires user action")
 
     if raw in QUEUED_STATUSES:
