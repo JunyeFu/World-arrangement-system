@@ -61,7 +61,7 @@ OpenCode owns GLM provider access. Claude Code provider profiles are loaded per 
 Windows PowerShell:
 
 ```powershell
-cd D:\Agent\World-system
+cd D:\Agent\world-arrangement-system
 uv sync --all-extras --dev
 ```
 
@@ -98,7 +98,7 @@ Recommended task entry:
 
 ```text
 /world task
-project: travel_with_me
+project: travel-with-me
 mode: execute
 world_preflight: minimal
 world_self_analysis: false
